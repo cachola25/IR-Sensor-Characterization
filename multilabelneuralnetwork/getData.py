@@ -3,22 +3,18 @@
 #
 from irobot_edu_sdk.backend.bluetooth import Bluetooth
 from irobot_edu_sdk.robots import event, Create3
+from config import get_config_info
 import asyncio
 import os
 import csv
 
-# Prompt for the output file name and zones
-filename = "ir_sensor_data"
-
-zones = input("Enter the grid squares the object is in (e.g., a1,a2,a3,b3): ").split(",")
-filename = f"{filename}.csv"
+robot_name, selected_zones, filename, num_rows = get_config_info()
 
 # Check if the file already exists and open for writing
 file_exists = os.path.isfile(filename)
 out_file = open(filename, "a", newline='')
 
-name = "CapstoneRobot1"
-robot = Create3(Bluetooth(name))
+robot = Create3(Bluetooth(robot_name))
 num_readings = 100  # Number of readings to collect
 rows = 0
 printed = False
@@ -38,7 +34,7 @@ async def play(robot):
         occupancy_vector = [0] * 153
 
         # Update array based on the input zones
-        for zone in zones: 
+        for zone in selected_zones: 
 
             # Convert the zone index and mark 1 with object inside and 0 for no object inside 
             column_index = (ord(zone[0]) - ord('a')) + (int(zone[1:]) - 1) * 17
@@ -49,9 +45,6 @@ async def play(robot):
         sensor_data = sensors + occupancy_vector 
         out_file.write(",".join(map(str, sensor_data)) + "\n")
         rows += 1
-
-        print(f"Data collected: {sensor_data}")
-
         # await asyncio.sleep(0.1)
 
     # Close the file
