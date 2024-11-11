@@ -2,6 +2,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras import layers, models
 import matplotlib.pyplot as plt
+from tensorflow.keras.callbacks import EarlyStopping
 
 # function to translate from array index to cell index
 def index_to_cell(index):
@@ -38,11 +39,17 @@ model.compile(optimizer='adam',
 
 tf.random.set_seed(42)
 # Step 5: Train the Model (20 epochs, 32 samples per gradient update, and 80/20 split for training/testing)
+early_stopping = EarlyStopping(
+    monitor='val_loss',
+    patience=10,
+    restore_best_weights=True
+)
+
 history = model.fit(sensor_data, occupancy_data, 
-                    epochs=1000,
+                    epochs=200,
                     batch_size=32,
                     validation_split=0.2,
-                    verbose=2,
+                    callbacks=[early_stopping],
                     )
 
 # Step 6: Save the Model
