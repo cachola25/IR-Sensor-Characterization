@@ -5,6 +5,7 @@ robot_name = None   # Get the robot name to connect form
 selected_zones = [] # Get the zones the robot is in
 filename = None     # Get the CSV file for the data
 num_rows = 500      # Get the number of rows to collect
+data_file = None    # Get the training data
 
 # Function to move from Screen 1 to Screen 2
 def continue_from_screen1():
@@ -86,13 +87,16 @@ def continue_from_screen4():
         messagebox.showerror("Selection Error", "Please select an option.")
         return
 
-
-    print(f"Selected Robot Name: {robot_name}")
-    print(f"Selected Zones: {selected_zones}")
-    print(f"Selected Filename: {filename}")
-    print(f"Number of Rows: {num_rows}")
     screen4.destroy()
-
+    
+# Function to close the application after Screen 5
+def continue_from_screen5():
+    global data_file
+    if not data_file:
+        messagebox.showerror("File Selection Error", "Please select a CSV file.")
+        return
+    screen5.destroy()
+    
 # Function that will open a file explorer for the user to select the data file
 def browse_file():
     # Only allow CSVs to be selected
@@ -103,7 +107,19 @@ def browse_file():
     )
     if file_path:
         selected_file_label.config(text=file_path)
-
+        
+# Function to browse and select the training data file in Screen 5
+def browse_training_file():
+    global data_file
+    file_path = filedialog.askopenfilename(
+        title="Select Training Data CSV File",
+        filetypes=[("CSV files", "*.csv")],
+        defaultextension=".csv"
+    )
+    if file_path:
+        selected_training_file_label.config(text=file_path)
+        data_file = file_path
+        
 # Make the GUI behave differently based on what option is selected
 def on_file_option_change(*args):
     selected_option = file_option_var.get()
@@ -320,9 +336,34 @@ def show_screen4():
     
     # Start screen 4
     screen4.mainloop()
+    
+def show_screen5():
+    global screen5, selected_training_file_label, data_file
 
+    screen5 = tk.Tk()
+    screen5.title("Training Data Selection")
+
+    screen5.attributes('-topmost', True)
+    screen5.update()
+    screen5.attributes('-topmost', False)
+    instruction_label = tk.Label(screen5, text="Select the training data CSV file:")
+    instruction_label.pack(pady=10)
+
+    browse_button = tk.Button(screen5, text="Browse...", command=browse_training_file)
+    browse_button.pack(pady=5)
+
+    selected_training_file_label = tk.Label(screen5, text="")
+    selected_training_file_label.pack(pady=5)
+
+    continue_button = tk.Button(screen5, text="Continue", command=continue_from_screen5)
+    continue_button.pack(pady=20)
+
+    screen5.mainloop()
+    
 def get_config_info():
     show_screen1()
-    print(robot_name, selected_zones, filename, num_rows)
     return robot_name, selected_zones, filename, num_rows
 
+def get_training_data_file():
+    show_screen5()
+    return data_file

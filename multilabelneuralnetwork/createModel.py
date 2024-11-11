@@ -1,7 +1,8 @@
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras import layers, models
 import matplotlib.pyplot as plt
+from config import get_training_data_file
+from tensorflow.keras import layers, models
 from tensorflow.keras.callbacks import EarlyStopping
 
 # function to translate from array index to cell index
@@ -46,15 +47,15 @@ early_stopping = EarlyStopping(
 )
 
 history = model.fit(sensor_data, occupancy_data, 
-                    epochs=200,
+                    epochs=1000,
                     batch_size=32,
                     validation_split=0.2,
                     callbacks=[early_stopping],
                     )
 
 # Step 6: Save the Model
-model.save('obstacle_detection_model.h5')
-print("Model saved as 'obstacle_detection_model.h5'")
+model.save('obstacle_detection_model.keras')
+print("Model saved as 'obstacle_detection_model.keras'")
 
 # Step 7: Model Prediction
 test_input = np.array([[5,13,19,28,16,6,3]])
