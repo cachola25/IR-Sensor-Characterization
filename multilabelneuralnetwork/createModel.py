@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import layers, models
+from tensorflow.keras.callbacks import EarlyStopping
 
 # function to translate from array index to cell index
 def index_to_cell(index):
@@ -16,7 +17,7 @@ def cell_to_index(cell):
     return row * 17 + col
 
 # Step 1: Load Data from CSV
-data = np.loadtxt('test_multi_object.csv', delimiter=',')
+data = np.loadtxt('new_database.csv', delimiter=',')
 
 # Step 2: Separate the Data where first 7 col are IR sensor readings and remaining is the array
 sensor_data = data[:, :7]
@@ -37,11 +38,17 @@ model.compile(optimizer='adam',
 
 tf.random.set_seed(42)
 # Step 5: Train the Model (20 epochs, 32 samples per gradient update, and 80/20 split for training/testing)
+early_stopping = EarlyStopping(
+    monitor='val_loss',
+    patience=10,
+    restore_best_weights=True
+)
 
 history = model.fit(sensor_data, occupancy_data, 
-                    epochs=20,
+                    epochs=200,
                     batch_size=32,
                     validation_split=0.2,
+                    callbacks=[early_stopping],
                     )
 
 # Step 6: Save the Model
@@ -49,25 +56,25 @@ model.save('obstacle_detection_model.h5')
 print("Model saved as 'obstacle_detection_model.h5'")
 
 # Step 7: Model Prediction
-test_input = np.array([[0,1000,12,12,8,1044,2]])
+test_input = np.array([[5,13,19,28,16,6,3]])
 predicted_output = model.predict(test_input)
 
 # Find cells with a probability above threshold
-occupied_indices = np.where(predicted_output > 0.5)[1]
+occupied_indices = np.where(predicted_output > 0.3)[1]
 
 # Convert array index to cell coordinate pairs
 occupied_cells = [index_to_cell(idx) for idx in occupied_indices]
 
-# Specify cells to check
-target_cells = ["E6", "L6"]
+# # Specify cells to check
+# target_cells = ["E6", "L6"]
 
-# Print probabilities for specified cells
-for cell in target_cells:
-    index = cell_to_index(cell)
-    probability = predicted_output[0, index]
-    print(f"{cell}, with probability: {probability}")
+# # Print probabilities for specified cells
+# for cell in target_cells:
+#     index = cell_to_index(cell)
+#     probability = predicted_output[0, index]
+#     print(f"{cell}, with probability: {probability}")
 
-print()
+# print()
 # Iterate through occupied cells and print the corresponding probability
 for i, cell in enumerate(occupied_cells):
     probability = predicted_output[0, occupied_indices[i]]

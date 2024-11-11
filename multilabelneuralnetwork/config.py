@@ -222,7 +222,7 @@ def show_screen2():
     # to click on the zones an object is in
     grid_frame = tk.Frame(main_frame)
     grid_frame.pack()
-    columns = [chr(i) for i in range(ord('a'), ord('q'))] 
+    columns = [chr(i) for i in range(ord('a'), ord('r'))] 
     rows = [str(i) for i in range(1, 10)] 
 
     # Display and format the grid
