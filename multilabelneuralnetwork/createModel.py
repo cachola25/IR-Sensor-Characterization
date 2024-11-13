@@ -1,22 +1,29 @@
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
+import seaborn as sns
 from config import get_training_data_file
 from tensorflow.keras import layers, models
 from tensorflow.keras.callbacks import EarlyStopping
 
+
 # function to translate from array index to cell index
+
+
 def index_to_cell(index):
-    columns = 'ABCDEFGHIJKLMNOPQR' 
+    columns = 'ABCDEFGHIJKLMNOPQR'
     row = index // 17 + 1
     col = index % 17
     return f"{columns[col]}{row}"
 
+
 def cell_to_index(cell):
-    columns = 'ABCDEFGHIJKLMNOPQR' 
+    columns = 'ABCDEFGHIJKLMNOPQR'
     col = columns.index(cell[0])  # Get column index from the letter
-    row = int(cell[1:]) - 1       # Get row index (subtract 1 for 0-based index)
+    # Get row index (subtract 1 for 0-based index)
+    row = int(cell[1:]) - 1
     return row * 17 + col
+
 
 # Step 1: Load Data from CSV
 data = np.loadtxt('new_database.csv', delimiter=',')
@@ -28,13 +35,13 @@ occupancy_data = data[:, 7:]
 # Step 3: Define the Model (input layer of 7, first layer of 64, second layer of 128, and output layer of 153)
 model = models.Sequential([
     layers.Input(shape=(7,)),
-    layers.Dense(len(sensor_data), activation='relu'), 
+    layers.Dense(len(sensor_data), activation='relu'),
     layers.Dense(len(sensor_data) // 2, activation='relu'),
     layers.Dense(len(occupancy_data[0]), activation='sigmoid')
 ])
 
 # Step 4: Compile the Model (binary_crossentropy for multi label classification)
-model.compile(optimizer='adam', 
+model.compile(optimizer='adam',
               loss='binary_crossentropy',
               metrics=['accuracy'])
 
@@ -46,7 +53,7 @@ early_stopping = EarlyStopping(
     restore_best_weights=True
 )
 
-history = model.fit(sensor_data, occupancy_data, 
+history = model.fit(sensor_data, occupancy_data,
                     epochs=1000,
                     batch_size=32,
                     validation_split=0.2,
@@ -58,7 +65,7 @@ model.save('obstacle_detection_model.keras')
 print("Model saved as 'obstacle_detection_model.keras'")
 
 # Step 7: Model Prediction
-test_input = np.array([[5,13,19,28,16,6,3]])
+test_input = np.array([[1, 1, 1, 1, 1, 1, 1]])
 predicted_output = model.predict(test_input)
 
 # Find cells with a probability above threshold
@@ -103,4 +110,17 @@ plt.ylabel('Loss')
 plt.xlabel('Epoch')
 plt.legend(loc='upper left')
 
+plt.show()
+
+# Step 1: Reshape predictions into a 9x17 grid
+grid_shape = (9, 17)  # Adjust based on your grid layout
+probability_grid = predicted_output.reshape(grid_shape)
+
+# Step 2: Plot heatmap
+plt.figure(figsize=(12, 8))
+sns.heatmap(probability_grid, annot=True, fmt=".2f", cmap="YlGnBu", cbar=True,
+            xticklabels=list('ABCDEFGHIJKLMNOPQR'), yticklabels=range(1, 10))
+plt.title("Predicted Object Presence Probability per Zone")
+plt.xlabel("Grid Columns")
+plt.ylabel("Grid Rows")
 plt.show()
