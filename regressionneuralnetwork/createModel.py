@@ -21,10 +21,9 @@ model = models.Sequential([
 ])
 
 # Step 4: Compile the Model
-# Use mean squared error as we are predicting continuous values
 model.compile(optimizer='adam', 
               loss='mean_squared_error',
-              metrics=['mae'])           # Mean Absolute Error for easier interpretation of error
+              metrics=['mae'])
 
 # Step 5: Train the Model
 # Early stopping to avoid overfitting
