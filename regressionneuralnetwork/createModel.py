@@ -22,6 +22,11 @@ data = np.loadtxt("test_multi_object.csv", delimiter=',', converters=converters)
 sensor_data = data[:, :7]
 polar_coordinates = data[:, 7:]
 
+# Normalize the sensor data by dividing by
+# the largest recorded sensor value
+max_value = np.max(sensor_data)
+sensor_data /= max_value
+        
 # Step 3: Define Model
 model = models.Sequential([
     layers.Input(shape=(7,)),            # Input layer for 7 IR sensor readings
@@ -50,10 +55,15 @@ model.save('regressionNeuralNetwork.keras')
 print("Model saved as 'regressionNeuralNetwork.keras'")
 
 # Step 7: Model Prediction
-test_input = np.array([[4,211,18,20,19,9,8]])
-predicted_output = model.predict(test_input)
+test_input = np.array([[4, 211, 18, 20, 19, 9, 8]]) / max_value
 
-# Print prediction
+predicted_output = model.predict(test_input)
 predicted_distance, predicted_start_angle, predicted_end_angle = predicted_output[0]
-print(f"Predicted Distance: {predicted_distance}, Start Angle: {predicted_start_angle}, End Angle: {predicted_end_angle}")
+predicted_start_angle_deg = np.degrees(predicted_start_angle)
+predicted_end_angle_deg = np.degrees(predicted_end_angle)
+
+# Print predictions
+print(f"Predicted Distance: {predicted_distance}")
+print(f"Start Angle: {predicted_start_angle_deg} degrees")
+print(f"End Angle: {predicted_end_angle_deg} degrees")
 
