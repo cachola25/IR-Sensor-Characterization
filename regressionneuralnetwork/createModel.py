@@ -4,9 +4,19 @@ from tensorflow.keras import layers, models
 from tensorflow.keras.callbacks import EarlyStopping
 import matplotlib.pyplot as plt
 
+# Function to convert PI/7 etc... to the actual numerical value
+def angle_converter(s):
+    s = s.strip()
+    s = s.replace('PI', str(np.pi))
+    try:
+        return float(eval(s))
+    except:
+        raise ValueError(f"Could not convert angle '{s}' to float.")
+    
 # Step 1: Load Data from CSV 
 # [sensor1, sensor2, ..., sensor7, distance, left start angle, right end angle]
-data = np.loadtxt('b.csv', delimiter=',')
+converters = {8: angle_converter, 9: angle_converter} # Only convert the angle columns
+data = np.loadtxt("test_multi_object.csv", delimiter=',', converters=converters)
 
 # Step 2: Separate the Data
 sensor_data = data[:, :7]
