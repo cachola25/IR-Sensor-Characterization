@@ -94,7 +94,7 @@ print("Model saved as 'regressionNeuralNetwork.keras\n'")
 
 # Step 6: Model Prediction
 test_input = np.array([[4,16,28,1102,187,9,13]]) / max_value
-
+print(max_value)
 predicted_output = model.predict(test_input)
 predicted_distance, predicted_start_angle, predicted_end_angle = predicted_output[0]
 predicted_start_angle_deg = np.degrees(predicted_start_angle)
