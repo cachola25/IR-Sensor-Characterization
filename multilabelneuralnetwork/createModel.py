@@ -26,7 +26,7 @@ def cell_to_index(cell):
 
 
 # Step 1: Load Data from CSV
-data = np.loadtxt('new_database.csv', delimiter=',')
+data = np.loadtxt('ir_sensor_data.csv', delimiter=',')
 
 # Step 2: Separate the Data where first 7 col are IR sensor readings and remaining is the array
 sensor_data = data[:, :7]
@@ -65,11 +65,11 @@ model.save('obstacle_detection_model.keras')
 print("Model saved as 'obstacle_detection_model.keras'")
 
 # Step 7: Model Prediction
-test_input = np.array([[1, 1, 1, 1, 1, 1, 1]])
+test_input = np.array([[5,201,19,14,54,13,12]])
 predicted_output = model.predict(test_input)
 
 # Find cells with a probability above threshold
-occupied_indices = np.where(predicted_output > 0.3)[1]
+occupied_indices = np.where(predicted_output > 0.1)[1]
 
 # Convert array index to cell coordinate pairs
 occupied_cells = [index_to_cell(idx) for idx in occupied_indices]
@@ -89,8 +89,21 @@ for i, cell in enumerate(occupied_cells):
     probability = predicted_output[0, occupied_indices[i]]
     print(f"Object in {cell}, with probability: {probability}")
 
-# Plot training & validation accuracy values
-plt.figure(figsize=(12, 4))
+# Step 7: Model Prediction
+test_input = np.array([[2,204,14,16,56,11,11]])
+predicted_output = model.predict(test_input)
+
+# Reshape the output into a 9x17 grid
+probability_grid = predicted_output.reshape(9, 17)
+
+# Print the grid of probabilities with labels for better readability
+print("Predicted Probability Grid (9x17):")
+columns = 'ABCDEFGHIJKLMNOPQR'
+print("    " + " ".join(columns))  # Print column headers
+for i, row in enumerate(probability_grid):
+    row_str = " ".join(f"{prob:.2f}" for prob in row)  # Format each probability to two decimal places
+    print(f"{i+1:2} | {row_str}")
+
 
 # Plot accuracy
 plt.subplot(1, 2, 1)
