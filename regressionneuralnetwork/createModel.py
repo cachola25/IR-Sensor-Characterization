@@ -49,7 +49,8 @@ tuner = kt.RandomSearch(
     max_trials=10,
     executions_per_trial=1,
     directory='my_dir',
-    project_name='ir_sensor_tuning'
+    project_name='ir_sensor_tuning',
+    overwrite=True
 )
 
 # Early stopping to avoid overfitting
@@ -60,6 +61,7 @@ split_index = int(0.8 * len(sensor_data))
 x_train, x_val = sensor_data[:split_index], sensor_data[split_index:]
 y_train, y_val = polar_coordinates[:split_index], polar_coordinates[split_index:]
 
+print(f"Beginning tuning process...")
 # Step 4: Perform hyperparameter search
 tuner.search(x_train, y_train,
              epochs=100,
