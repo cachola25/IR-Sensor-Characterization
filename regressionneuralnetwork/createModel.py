@@ -6,15 +6,6 @@ from tensorflow import keras
 from tensorflow.keras import layers, models
 from tensorflow.keras.callbacks import EarlyStopping
 
-# Function to convert PI/7 etc... to the actual numerical value
-def angle_converter(s):
-    s = s.strip()
-    s = s.replace('PI', str(np.pi))
-    try:
-        return float(eval(s))
-    except:
-        raise ValueError(f"Could not convert angle '{s}' to float.")
-    
 # Define a model-building function for Keras Tuner
 def build_model(hp):
     model = keras.Sequential()
@@ -38,7 +29,6 @@ def build_model(hp):
 
 # Step 1: Load Data from CSV 
 # [sensor1, sensor2, ..., sensor7, distance, left start angle, right end angle]
-converters = {8: angle_converter, 9: angle_converter}  # Only convert the angle columns
 data = np.loadtxt("newData.csv", delimiter=',')
 
 # Step 2: Separate the Data
@@ -48,6 +38,9 @@ polar_coordinates = data[:, 7:]
 # Normalize the sensor data by dividing by the largest recorded sensor value
 max_value = np.max(sensor_data)
 sensor_data /= max_value
+
+# Convert angles to radians for the model (optional, depending on model requirements)
+polar_coordinates[:, 1:] = np.radians(polar_coordinates[:, 1:])  # Convert start and end angles to radians
 
 # Step 3: Define Model and and create a tuner that will find the optimal architecture for us
 tuner = kt.RandomSearch(
@@ -98,7 +91,7 @@ model.save('regressionNeuralNetwork.keras')
 print("Model saved as 'regressionNeuralNetwork.keras\n'")
 
 # Step 6: Model Prediction
-test_input = np.array([[0,5,4,11,8,1051,2]]) / max_value
+test_input = np.array([[4,16,28,1102,187,9,13]]) / max_value
 
 predicted_output = model.predict(test_input)
 predicted_distance, predicted_start_angle, predicted_end_angle = predicted_output[0]
@@ -113,4 +106,3 @@ if predicted_end_angle_deg > 180:
 print(f"Predicted Distance: {predicted_distance}")
 print(f"Start Angle: {predicted_start_angle_deg} degrees")
 print(f"End Angle: {predicted_end_angle_deg} degrees")
-

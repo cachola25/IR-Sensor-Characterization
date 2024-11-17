@@ -1,20 +1,23 @@
-#
 # Licensed under 3-Clause BSD license available in the License file. Copyright (c) 2021-2022 iRobot Corporation. All rights reserved.
-#
+
 from irobot_edu_sdk.backend.bluetooth import Bluetooth
 from irobot_edu_sdk.robots import event, Create3
-from config import get_config_info
 import asyncio
 import os
-import csv
 
-robot_name, selected_zones, filename, num_rows = get_config_info()
+filename = "newData.csv"
 
 # Check if the file already exists and open for writing
 file_exists = os.path.isfile(filename)
-out_file = open(filename, "newData", newline='')
+out_file = open(filename, "a", newline='')
 
-robot = Create3(Bluetooth(robot_name))
+# Prompt for polar coordinates
+distance = float(input("Enter the distance to the object (in inches): "))
+start_angle = float(input("Enter the start angle of the object (in degrees): "))
+end_angle = float(input("Enter the end angle of the object (in degrees): "))
+
+name = "CapstoneRobot1"
+robot = Create3(Bluetooth(name))
 num_readings = 100  # Number of readings to collect
 rows = 0
 printed = False
@@ -22,30 +25,20 @@ printed = False
 @event(robot.when_play)
 async def play(robot):
     global rows, printed
-    while True:
-
+    while rows < num_readings:
         # Get IR sensor readings
         sensors = (await robot.get_ir_proximity()).sensors
         if sensors is None:
             print("Failed to get IR sensor readings.")
             continue 
 
-        # Create an array initialized to 0
-        occupancy_vector = [0] * 153
-
-        # Update array based on the input zones
-        for zone in selected_zones: 
-
-            # Convert the zone index and mark 1 with object inside and 0 for no object inside 
-            column_index = (ord(zone[0]) - ord('a')) + (int(zone[1:]) - 1) * 17
-            if 0 <= column_index < 153:  # Check if the index is within range
-                occupancy_vector[column_index] = 1
-
-        # Combine sensor readings with occupancy data and write to csv
-        sensor_data = sensors + occupancy_vector 
-        out_file.write(",".join(map(str, sensor_data)) + "\n")
+        # Combine sensor readings with user-provided polar coordinates
+        data_row = sensors + [distance, start_angle, end_angle]
+        out_file.write(",".join(map(str, data_row)) + "\n")
         rows += 1
-        # await asyncio.sleep(0.1)
+
+        print(f"Data collected: {data_row}")
+
 
     # Close the file
     if not printed:
