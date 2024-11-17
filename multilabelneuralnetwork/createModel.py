@@ -26,7 +26,7 @@ def cell_to_index(cell):
 
 
 # Step 1: Load Data from CSV
-data = np.loadtxt('ir_sensor_data.csv', delimiter=',')
+data = np.loadtxt('newData.csv', delimiter=',')
 
 # Step 2: Separate the Data where first 7 col are IR sensor readings and remaining is the array
 sensor_data = data[:, :7]

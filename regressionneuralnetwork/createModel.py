@@ -39,7 +39,7 @@ def build_model(hp):
 # Step 1: Load Data from CSV 
 # [sensor1, sensor2, ..., sensor7, distance, left start angle, right end angle]
 converters = {8: angle_converter, 9: angle_converter}  # Only convert the angle columns
-data = np.loadtxt("polar_data.csv", delimiter=',', converters=converters)
+data = np.loadtxt("newData.csv", delimiter=',')
 
 # Step 2: Separate the Data
 sensor_data = data[:, :7]
