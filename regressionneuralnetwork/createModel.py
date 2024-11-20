@@ -29,7 +29,7 @@ def build_model(hp):
 
 # Step 1: Load Data from CSV 
 # [sensor1, sensor2, ..., sensor7, distance, left start angle, right end angle]
-data = np.loadtxt("newData.csv", delimiter=',')
+data = np.loadtxt("finalNewDataNoZeros.csv", delimiter=',')
 
 # Step 2: Separate the Data
 sensor_data = data[:, :7]
@@ -50,7 +50,7 @@ tuner = kt.RandomSearch(
     executions_per_trial=1,
     directory='my_dir',
     project_name='ir_sensor_tuning',
-    overwrite=True
+    #overwrite=True
 )
 
 # Early stopping to avoid overfitting
@@ -89,11 +89,11 @@ history = model.fit(x_train, y_train,
                     callbacks=[early_stopping],
                     verbose=0)
 
-model.save('regressionNeuralNetwork.keras')
-print("Model saved as 'regressionNeuralNetwork.keras\n'")
+model.save('regressionNeuralNetworkNoZeros.keras')
+print("Model saved as 'regressionNeuralNetworkNoZeros.keras\n'")
 
 # Step 6: Model Prediction
-test_input = np.array([[4,16,28,1102,187,9,13]]) / max_value
+test_input = np.array([[0,0,0,5,4,153,2]]) / max_value
 
 predicted_output = model.predict(test_input)
 predicted_distance, predicted_start_angle, predicted_end_angle = predicted_output[0]

@@ -5,7 +5,7 @@ from irobot_edu_sdk.robots import event, Create3
 import asyncio
 import os
 
-filename = "newData.csv"
+filename = "c.csv"
 
 # Check if the file already exists and open for writing
 file_exists = os.path.isfile(filename)
