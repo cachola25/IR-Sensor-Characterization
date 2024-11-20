@@ -180,6 +180,7 @@ def create_error_heatmap(predictions, ground_truth, max_distance=12, angle_incre
     # Define the grid for plotting
     angle_grid, distance_grid = np.meshgrid(
         angle_bins[:-1], distance_bins[:-1])
+    angle_grid += 10 
 
     # Plot the heatmap
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'}, figsize=(10, 6))
@@ -189,7 +190,9 @@ def create_error_heatmap(predictions, ground_truth, max_distance=12, angle_incre
     # Customize plot for a half-circle
     ax.set_theta_zero_location("E")  # 0 degrees at the top
     ax.set_theta_direction(1)  # Counterclockwise direction
-    ax.set_ylim(2, max_distance)  # Start radial extent at 2 inches
+    ax.set_ylim(0, max_distance)  # Start radial extent at 2 inches
+    ax.set_xlim(0, np.pi)
+    ax.set_yticks(distance_bins)
     ax.set_xticks(np.radians(angle_bins))  # Show ticks for 0° to 180°
     ax.set_title("Prediction Error Heatmap", va='bottom', fontsize=16)
     cbar = plt.colorbar(heatmap, ax=ax, pad=0.1)
