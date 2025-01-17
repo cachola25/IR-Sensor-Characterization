@@ -93,12 +93,14 @@ print(f"Optimal learning rate: {best_hps.get('learning_rate')}\n")
 
 # Step 5: Build the model with the optimal hyperparameters and train it
 model = tuner.hypermodel.build(best_hps)
+log_dir = "./logs"
+tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
 history = model.fit(x_train, y_train,
                     epochs=500,
                     validation_data=(x_val, y_val),
-                    callbacks=[early_stopping],
-                    verbose=0)
+                    callbacks=[early_stopping,tensorboard_callback],
+                    verbose=1)
 
 model.save('regressionNeuralNetworkNoZeros.keras')
 print("Model saved as 'regressionNeuralNetworkNoZeros.keras\n'")
