@@ -4,15 +4,13 @@ import keras_tuner as kt
 import matplotlib.pyplot as plt
 from tensorflow import keras
 from tensorflow.keras import layers, models
-from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.callbacks import EarlyStopping, TensorBoard
 
 # load predictions and ground truth
 predictions = np.load("predictions.npy")
 ground_truth = np.load("ground_truth.npy")
 
 # Define a model-building function for Keras Tuner
-
-
 def build_model(hp):
     model = keras.Sequential()
     model.add(keras.Input(shape=(7,)))  # Input layer for 7 IR sensor readings
@@ -82,7 +80,6 @@ tuner.search(x_train, y_train,
 
 # Get the optimal hyperparameters
 best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
-
 print(f"""
 The hyperparameter search is complete.
 Optimal number of layers: {best_hps.get('num_layers')}
@@ -94,7 +91,7 @@ print(f"Optimal learning rate: {best_hps.get('learning_rate')}\n")
 # Step 5: Build the model with the optimal hyperparameters and train it
 model = tuner.hypermodel.build(best_hps)
 log_dir = "./logs"
-tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+tensorboard_callback = TensorBoard(log_dir=log_dir, histogram_freq=1)
 
 history = model.fit(x_train, y_train,
                     epochs=500,
@@ -122,7 +119,6 @@ print(f"Predicted Distance: {predicted_distance}")
 print(f"Start Angle: {predicted_start_angle_deg} degrees")
 print(f"End Angle: {predicted_end_angle_deg} degrees")
 
-
 def compute_error(predicted, actual):
     """
     Compute absolute error for distance and angles.
@@ -134,7 +130,6 @@ def compute_error(predicted, actual):
     start_angle_error = np.abs(predicted[1] - actual[1])
     end_angle_error = np.abs(predicted[2] - actual[2])
     return distance_error, start_angle_error, end_angle_error
-
 
 def create_error_heatmap(predictions, ground_truth, max_distance=12, angle_increment=20, distance_increment=2):
     """
@@ -201,7 +196,6 @@ def create_error_heatmap(predictions, ground_truth, max_distance=12, angle_incre
     cbar.set_label("Mean Error", rotation=270, labelpad=20)
 
     plt.show()
-
 
 # Create the half-circle heatmap
 create_error_heatmap(predictions, ground_truth)
