@@ -8,3 +8,4 @@ output.txt
 *.pkl
 *.txt
 regressionneuralnetwork/my_dir
+regressionneuralnetwork/logs
