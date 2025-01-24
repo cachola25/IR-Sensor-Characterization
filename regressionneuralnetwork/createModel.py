@@ -29,7 +29,7 @@ def build_model(hp):
 
     model.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
                   loss='mean_squared_error',
-                  metrics=['mae'])
+                  metrics=['mse'])
     return model
 
 
