@@ -1,5 +1,4 @@
 ir_env/
-*.csv
 *.pth
 adaboost-main/
 .DS_Store
