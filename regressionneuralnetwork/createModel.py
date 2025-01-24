@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import tensorflow as tf
 import keras_tuner as kt
 import matplotlib.pyplot as plt
@@ -33,9 +34,22 @@ def build_model(hp):
     return model
 
 
-# Step 1: Load Data from CSV
+
+# Step 1: Load Data from CSV and Randomize 
 # [sensor1, sensor2, ..., sensor7, distance, left start angle, right end angle]
-data = np.loadtxt("finalNewDataNoZeros.csv", delimiter=',')
+
+file_path_original = "finalNewDataNoTwelve.csv"
+data_original = pd.read_csv(file_path_original, header=None)
+
+# Shuffle the rows randomly
+shuffled_data = data_original.sample(frac=1, random_state=42).reset_index(drop=True)
+
+# Save the shuffled data to a new CSV file
+file_path_shuffle = "finalNewDataNoTwelveShuffle.csv"  # Specify the desired output file name
+shuffled_data.to_csv(file_path_shuffle, index=False, header=False)
+
+
+data = np.loadtxt(file_path_shuffle, delimiter=',')
 
 # Step 2: Separate the Data
 sensor_data = data[:, :7]
@@ -99,11 +113,11 @@ history = model.fit(x_train, y_train,
                     callbacks=[early_stopping,tensorboard_callback],
                     verbose=1)
 
-model.save('regressionNeuralNetworkNoZeros.keras')
-print("Model saved as 'regressionNeuralNetworkNoZeros.keras\n'")
+model.save('regressionNeuralNetworkNoTwelve.keras')
+print("Model saved as 'regressionNeuralNetworkNoTwelve.keras\n'")
 
 # Step 6: Model Prediction
-test_input = np.array([[0, 0, 0, 5, 4, 153, 2]]) / max_value
+test_input = np.array([[4,9,18,27,179,275,11]]) / max_value
 
 predicted_output = model.predict(test_input)
 predicted_distance, predicted_start_angle, predicted_end_angle = predicted_output[0]

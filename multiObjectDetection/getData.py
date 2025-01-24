@@ -5,20 +5,18 @@ from irobot_edu_sdk.robots import event, Create3
 import asyncio
 import os
 
-filename = "test.csv"
+filename = "differentSizesData.csv"
 
 # Check if the file already exists and open for writing
 file_exists = os.path.isfile(filename)
 out_file = open(filename, "a", newline='')
 
 # Prompt for polar coordinates
-distance = float(input("Enter the distance to the object (in inches): "))
-start_angle = float(input("Enter the start angle of the object (in degrees): "))
-end_angle = float(input("Enter the end angle of the object (in degrees): "))
+num_objects = float(input("Enter the number of objects: "))
 
 name = "CapstoneRobot1"
 robot = Create3(Bluetooth(name))
-num_readings = 10  # Number of readings to collect
+num_readings = 4900  # Number of readings to collect
 rows = 0
 printed = False
 
@@ -33,7 +31,7 @@ async def play(robot):
             continue 
 
         # Combine sensor readings with user-provided polar coordinates
-        data_row = sensors + [distance, start_angle, end_angle]
+        data_row = sensors + [num_objects]
         out_file.write(",".join(map(str, data_row)) + "\n")
         rows += 1
 
