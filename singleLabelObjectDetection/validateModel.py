@@ -4,10 +4,10 @@ import tensorflow as tf
 from tensorflow import keras
 
 # Load the trained model
-model = keras.models.load_model('outcomePredictionModel.keras')
+model = keras.models.load_model('outcomePredictionModel3.keras')
 
 # Load the dataset
-file_path = "testShuffled.csv"
+file_path = "test3Shuffled.csv"
 data = np.loadtxt(file_path, delimiter=',')
 
 # Separate sensor data and ground truth labels

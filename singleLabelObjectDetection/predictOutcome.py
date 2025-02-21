@@ -6,27 +6,30 @@ import tensorflow as tf
 # Measure total script execution time
 script_start_time = time.time()
 
-# Step 1: Load the trained model for object prediction
+# Load the trained model for object prediction
 load_start_time = time.time()
-model = tf.keras.models.load_model('objectDetectionModel.keras')
+model = tf.keras.models.load_model('outcomePredictionModel3.keras')
 load_end_time = time.time()
 
 print(f"Model loaded in {load_end_time - load_start_time:.4f} seconds.")
 
-# Step 2: Load and preprocess the data
-test_input = np.array([[11,0,4,0,8,0,3]], dtype=float)
-data = np.loadtxt("test.csv", delimiter=',')
+# Load and preprocess the data
+test_input = np.array([[47, 74, 12, 27, 14, 7, 82]], dtype=float)
+data = np.loadtxt("test3.csv", delimiter=',')
 sensor_data = data[:, :7]
 max_value = np.max(sensor_data)
-test_input /= max_value  # Normalize the input data
+test_input /= max_value 
 
-# Step 3: Perform model prediction
+# Perform model prediction
 predict_start_time = time.time()
-predicted_objects = model.predict(test_input)[0][0]
+predicted_probabilities = model.predict(test_input)[0]
+predicted_class = np.argmax(predicted_probabilities)
 predict_end_time = time.time()
 
 # Print prediction result
-print(f"Predicted Number of Objects: {predicted_objects}")
+print(f"Predicted Number of Objects: {predicted_class}")
+print(f"Predicted Probabilites: {predicted_probabilities}")
+
 
 # Print timing details
 print(f"Model prediction completed in {predict_end_time - predict_start_time:.4f} seconds.")

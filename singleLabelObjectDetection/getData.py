@@ -5,7 +5,7 @@ from irobot_edu_sdk.robots import event, Create3
 import asyncio
 import os
 
-filename = "twoObjects.csv"
+filename = "a.csv"
 
 # Check if the file already exists and open for writing
 file_exists = os.path.isfile(filename)
@@ -16,7 +16,7 @@ num_objects = float(input("Enter the number of objects: "))
 
 name = "CapstoneRobot1"
 robot = Create3(Bluetooth(name))
-num_readings = 100  # Number of readings to collect
+num_readings = 10 # Number of readings to collect
 rows = 0
 printed = False
 

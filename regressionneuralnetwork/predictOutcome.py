@@ -18,7 +18,9 @@ polar_coordinates = data[:, 7:]
 max_value = np.max(sensor_data)
 
 # Step 6: Model Prediction
-test_input = np.array([[14,14,13,22,32,10,113]]) / max_value
+# test_input = np.array([[11, 69, 16, 23, 17, 3, 86]]) / max_value
+test_input = np.array([[11, 11, 16, 23, 17, 3, 86]]) / max_value
+
 
 predicted_output = model.predict(test_input)
 predicted_distance, predicted_start_angle, predicted_end_angle = predicted_output[0]
