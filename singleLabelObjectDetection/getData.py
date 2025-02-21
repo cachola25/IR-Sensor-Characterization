@@ -30,7 +30,6 @@ async def play(robot):
             print("Failed to get IR sensor readings.")
             continue 
 
-        # Combine sensor readings with user-provided polar coordinates
         data_row = sensors + [num_objects]
         out_file.write(",".join(map(str, data_row)) + "\n")
         rows += 1

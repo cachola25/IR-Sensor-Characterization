@@ -1,7 +1,7 @@
 import csv
 
 # File paths
-input_file = 'finalNewData.csv'
+input_file = 'testDifferentSizesData.csv'
 output_file = 'test.csv'
 
 # Read the CSV data

@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
 import keras_tuner as kt
+import pandas as pd
 from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.callbacks import EarlyStopping
@@ -28,7 +29,19 @@ def build_model(hp):
 
 # Step 1: Load Data from CSV 
 # [sensor1, sensor2, ..., sensor7, num_objects]
-data = np.loadtxt("test.csv", delimiter=',')
+file_path_original = "test.csv"
+data_original = pd.read_csv(file_path_original, header=None)
+
+# Shuffle the rows randomly
+shuffled_data = data_original.sample(frac=1, random_state=42).reset_index(drop=True)
+
+# Save the shuffled data to a new CSV file
+file_path_shuffle = "testShuffled.csv"  # Specify the desired output file name
+shuffled_data.to_csv(file_path_shuffle, index=False, header=False)
+
+
+data = np.loadtxt(file_path_shuffle, delimiter=',')
+
 
 # Step 2: Separate the Data
 sensor_data = data[:, :7]

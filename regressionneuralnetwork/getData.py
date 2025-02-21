@@ -5,7 +5,7 @@ from irobot_edu_sdk.robots import event, Create3
 import asyncio
 import os
 
-filename = "differentSizesData.csv"
+filename = "validation.csv"
 
 # Check if the file already exists and open for writing
 file_exists = os.path.isfile(filename)
@@ -18,7 +18,7 @@ end_angle = float(input("Enter the end angle of the object (in degrees): "))
 
 name = "CapstoneRobot1"
 robot = Create3(Bluetooth(name))
-num_readings = 100  # Number of readings to collect
+num_readings = 10  # Number of readings to collect
 rows = 0
 printed = False
 

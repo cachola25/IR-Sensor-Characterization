@@ -9,16 +9,16 @@ import tensorflow as tf
 # Load the trained models
 
 start_time = time.time()
-model = tf.keras.models.load_model('regressionNeuralNetworkNoTwelve.keras')
+model = tf.keras.models.load_model('differentSizes2.keras')
 
 
-data = np.loadtxt("finalNewDataNoTwelveShuffle.csv", delimiter=',')
+data = np.loadtxt("differentSizesData/testDifferentSizesData.csv", delimiter=',')
 sensor_data = data[:, :7]
 polar_coordinates = data[:, 7:]
 max_value = np.max(sensor_data)
 
 # Step 6: Model Prediction
-test_input = np.array([[144,17,24,23,19,9,15]]) / max_value
+test_input = np.array([[14,14,13,22,32,10,113]]) / max_value
 
 predicted_output = model.predict(test_input)
 predicted_distance, predicted_start_angle, predicted_end_angle = predicted_output[0]
