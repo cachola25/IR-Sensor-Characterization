@@ -33,14 +33,14 @@ def build_model(hp):
 # Step 1: Load Data from CSV and Randomize 
 # [sensor1, sensor2, ..., sensor7, distance, left start angle, right end angle]
 
-file_path_original = "differentSizesData/testDifferentSizesData.csv"
+file_path_original = "./pca_test_data.csv"
 data_original = pd.read_csv(file_path_original, header=None)
 
 # Shuffle the rows randomly
 shuffled_data = data_original.sample(frac=1, random_state=42).reset_index(drop=True)
 
 # Save the shuffled data to a new CSV file
-file_path_shuffle = "differentSizesData/testDifferentSizesDataShuffle.csv"  # Specify the desired output file name
+file_path_shuffle = "./pca_test_data_shuffle.csv"  # Specify the desired output file name
 shuffled_data.to_csv(file_path_shuffle, index=False, header=False)
 
 
@@ -102,24 +102,13 @@ history = model.fit(x_train, y_train,
                     epochs=500,
                     validation_data=(x_val, y_val),
                     callbacks=[early_stopping],
-                    verbose=1)
+                    verbose=0)
 
 model.save('differentSizes2.keras')
 print("Model saved as 'differentSizes2.keras\n'")
 
 # Step 6: Model Prediction
-test_input = np.array([[4,9,18,27,179,275,11]]) / max_value
-
-predicted_output = model.predict(test_input)
-predicted_distance, predicted_start_angle, predicted_end_angle = predicted_output[0]
-predicted_start_angle_deg = np.degrees(predicted_start_angle)
-predicted_end_angle_deg = np.degrees(predicted_end_angle)
-
-if predicted_start_angle_deg > 180:
-    predicted_start_angle_deg -= 180
-if predicted_end_angle_deg > 180:
-    predicted_end_angle_deg -= 180
-# Print predictions
-print(f"Predicted Distance: {predicted_distance}")
-print(f"Start Angle: {predicted_start_angle_deg} degrees")
-print(f"End Angle: {predicted_end_angle_deg} degrees")
+# Evaluate the model on the validation set
+val_loss, val_mse = model.evaluate(x_val, y_val, verbose=1)
+print(f"Validation Loss (MSE): {val_loss:.4f}")
+print(f"Validation MSE: {val_mse:.4f}")
