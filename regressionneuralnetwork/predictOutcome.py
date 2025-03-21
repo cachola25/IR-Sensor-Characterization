@@ -19,7 +19,7 @@ max_value = np.max(sensor_data)
 
 # Step 6: Model Prediction
 # test_input = np.array([[11, 69, 16, 23, 17, 3, 86]]) / max_value
-test_input = np.array([[11, 11, 16, 23, 17, 3, 86]]) / max_value
+test_input = np.array([[43,110,16,16,20,7,94]]) / max_value
 
 
 predicted_output = model.predict(test_input)

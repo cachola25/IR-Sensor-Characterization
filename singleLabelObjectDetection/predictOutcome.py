@@ -14,7 +14,7 @@ load_end_time = time.time()
 print(f"Model loaded in {load_end_time - load_start_time:.4f} seconds.")
 
 # Load and preprocess the data
-test_input = np.array([[47, 74, 12, 27, 14, 7, 82]], dtype=float)
+test_input = np.array([[43,110,16,16,20,7,94]], dtype=float)
 data = np.loadtxt("test3.csv", delimiter=',')
 sensor_data = data[:, :7]
 max_value = np.max(sensor_data)
