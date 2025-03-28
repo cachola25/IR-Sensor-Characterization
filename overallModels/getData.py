@@ -5,7 +5,7 @@ from irobot_edu_sdk.robots import event, Create3
 import asyncio
 import os
 
-filename = "validation.csv"
+filename = "a.csv"
 
 # Check if the file already exists and open for writing
 file_exists = os.path.isfile(filename)
@@ -25,14 +25,14 @@ printed = False
 @event(robot.when_play)
 async def play(robot):
     global rows, printed
-    while rows < num_readings:
+    while True:
         # Get IR sensor readings
         sensors = (await robot.get_ir_proximity()).sensors
         if sensors is None:
             print("Failed to get IR sensor readings.")
             continue 
 
-        # Combine sensor readings with user-provided polar coordinates
+        # Combine sensor readings with polar coordinates
         data_row = sensors + [distance, start_angle, end_angle]
         out_file.write(",".join(map(str, data_row)) + "\n")
         rows += 1
