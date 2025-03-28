@@ -20,7 +20,7 @@ def print_model_predictions(X_test, X_test_filtered, y_pred_labels, y_test_label
     - y_test_labels: Actual labels after inverse transforming
     - mlb: MultiLabelBinarizer instance
     """
-    # Define sensor names for clarity (optional)
+    # Define sensor names for clarity
     sensor_names = ['left3', 'left2', 'left1', 'M', 'right1', 'right2', 'right3']
     
     # Calculate the maximum width for each column

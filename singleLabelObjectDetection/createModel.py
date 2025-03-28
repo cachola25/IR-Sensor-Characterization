@@ -28,14 +28,14 @@ def build_model(hp):
     return model
 
 # Step 1: Load Data from CSV 
-file_path_original = "test3.csv"
+file_path_original = "pca_test_data.csv"
 data_original = pd.read_csv(file_path_original, header=None)
 
 # Shuffle the rows randomly
 shuffled_data = data_original.sample(frac=1, random_state=42).reset_index(drop=True)
 
 # Save the shuffled data to a new CSV file
-file_path_shuffle = "test3Shuffled.csv"
+file_path_shuffle = "pca_test_data_shuffled.csv"
 shuffled_data.to_csv(file_path_shuffle, index=False, header=False)
 
 # Load the shuffled data
@@ -103,3 +103,6 @@ test_input = np.array([[0,4,1,10,3,4,0]]) / max_value
 predicted_probabilities = model.predict(test_input)[0]
 predicted_class = np.argmax(predicted_probabilities)
 print(f"Predicted Number of Objects: {predicted_class}")
+val_loss, val_accuracy = model.evaluate(x_val, y_val, verbose=1)
+print(f"Validation Loss: {val_loss:.4f}")
+print(f"Validation Accuracy: {val_accuracy:.4f}")
