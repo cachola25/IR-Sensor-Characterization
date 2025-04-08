@@ -16,7 +16,7 @@ distance = float(input("Enter the distance to the object (in inches): "))
 start_angle = float(input("Enter the start angle of the object (in degrees): "))
 end_angle = float(input("Enter the end angle of the object (in degrees): "))
 
-name = "CapstoneRobot1"
+name = "CapstoneRobot1" #Roomba
 robot = Create3(Bluetooth(name))
 num_readings = 10  # Number of readings to collect
 rows = 0

@@ -38,7 +38,7 @@ script_start_time = time.time()
 model = tf.keras.models.load_model('outcomePredictionModel3.keras')
 
 # Load and preprocess the data
-test_input = np.array([[1,28,97,75,16,101,11]], dtype=float)
+test_input = np.array([[53, 18, 49, 993, 662, 7, 12]], dtype=float)
 copied_input = test_input.copy()
 data = np.loadtxt("test3.csv", delimiter=',')
 sensor_data = data[:, :7]
@@ -52,13 +52,15 @@ predicted_class = np.argmax(predicted_probabilities)
 print(f"Predicted Number of Objects: {predicted_class}")
 print(f"Predicted Probabilites: {predicted_probabilities}")
 
+predicted_class = 2
+
 if predicted_class != 0:
     # load regression-based model to predict distance and angle 
     model = tf.keras.models.load_model('differentSizes2.keras')
 
     if predicted_class == 1:
 
-        predicted_output = model.predict(test_input[0])
+        predicted_output = model.predict(test_input)
         predicted_distance, predicted_start_angle, predicted_end_angle = predicted_output[0]
         predicted_start_angle_deg = np.degrees(predicted_start_angle)
         predicted_end_angle_deg = np.degrees(predicted_end_angle)
