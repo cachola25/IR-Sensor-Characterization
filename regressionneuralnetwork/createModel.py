@@ -33,14 +33,16 @@ def build_model(hp):
 # Step 1: Load Data from CSV and Randomize 
 # [sensor1, sensor2, ..., sensor7, distance, left start angle, right end angle]
 
-file_path_original = "differentSizesData/testDifferentSizesData.csv"
+# file_path_original = "differentSizesData/testDifferentSizesData.csv"
+file_path_original = "newData/combinationOfAllData.csv"
 data_original = pd.read_csv(file_path_original, header=None)
 
 # Shuffle the rows randomly
 shuffled_data = data_original.sample(frac=1, random_state=42).reset_index(drop=True)
 
 # Save the shuffled data to a new CSV file
-file_path_shuffle = "differentSizesData/testDifferentSizesDataShuffle.csv"  # Specify the desired output file name
+# file_path_shuffle = "differentSizesData/testDifferentSizesDataShuffle.csv"  # Specify the desired output file name
+file_path_shuffle = "newData/combinationOfAllDataShuffle.csv"
 shuffled_data.to_csv(file_path_shuffle, index=False, header=False)
 
 
@@ -104,12 +106,14 @@ history = model.fit(x_train, y_train,
                     callbacks=[early_stopping],
                     verbose=1)
 
-model.save('differentSizes2.keras')
-print("Model saved as 'differentSizes2.keras\n'")
+#model.save('differentSizes2.keras')
+#print("Model saved as 'differentSizes2.keras\n'")
+model.save('combinationOfAllData.keras')
+print("Model saved as 'combinationOfAllData.keras\n'")
 
 # Step 6: Model Prediction
-test_input = np.array([[4,9,18,27,179,275,11]]) / max_value
-
+test_input = np.array([[5,40,262,331,87,15,13]]) / max_value
+#,4.0,119.0,81.0
 predicted_output = model.predict(test_input)
 predicted_distance, predicted_start_angle, predicted_end_angle = predicted_output[0]
 predicted_start_angle_deg = np.degrees(predicted_start_angle)
