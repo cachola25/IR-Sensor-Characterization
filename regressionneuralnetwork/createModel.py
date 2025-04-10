@@ -8,8 +8,6 @@ from tensorflow.keras import layers, models
 from tensorflow.keras.callbacks import EarlyStopping
 
 # Define a model-building function for Keras Tuner
-
-
 def build_model(hp):
     model = keras.Sequential()
     model.add(keras.Input(shape=(7,)))  # Input layer for 7 IR sensor readings
@@ -27,10 +25,17 @@ def build_model(hp):
     learning_rate = hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4])
 
     model.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
-                  loss='mean_squared_error',
-                  metrics=['mse'])
+                loss='mean_squared_error',
+                metrics=['mse', custom_accuracy])
     return model
 
+
+def custom_accuracy(y_true, y_pred):
+    dist_ok = tf.less_equal(tf.abs(y_true[:, 0] - y_pred[:, 0]), 0.5)
+    start_ok = tf.equal(tf.round(y_true[:, 1]), tf.round(y_pred[:, 1]))
+    end_ok   = tf.equal(tf.round(y_true[:, 2]), tf.round(y_pred[:, 2]))
+    all_ok = tf.logical_and(dist_ok, tf.logical_and(start_ok, end_ok))
+    return tf.reduce_mean(tf.cast(all_ok, tf.float32))
 
 # Step 1: Load Data from CSV
 # [sensor1, sensor2, ..., sensor7, distance, left start angle, right end angle]
@@ -87,7 +92,8 @@ tuner.search(x_train, y_train,
              epochs=100,
              validation_data=(x_val, y_val),
              callbacks=[early_stopping],
-             verbose=0)
+             verbose=0,
+             overwrite=False)
 
 # Get the optimal hyperparameters
 best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
@@ -107,13 +113,14 @@ history = model.fit(x_train, y_train,
                     epochs=500,
                     validation_data=(x_val, y_val),
                     callbacks=[early_stopping],
-                    verbose=0)
+                    verbose=1)
 
 model.save('differentSizes2.keras')
 print("Model saved as 'differentSizes2.keras\n'")
 
 # Step 6: Model Prediction
 # Evaluate the model on the validation set
-val_loss, val_mse = model.evaluate(x_val, y_val, verbose=1)
+val_loss, val_mse, val_accuracy = model.evaluate(x_val, y_val, verbose=1)
 print(f"Validation Loss (MSE): {val_loss:.4f}")
 print(f"Validation MSE: {val_mse:.4f}")
+print(f"Custom Accuracy: {val_accuracy:.4f}")
