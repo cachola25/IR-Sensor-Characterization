@@ -18,6 +18,10 @@ rows = 0
 window_open = True
 printed = False
 
+print("🔌 Connecting to Roomba...")
+robot = Create3(Bluetooth(ROBOT_NAME))
+print("✅ Connected to Roomba")
+
 # --- Pygame Setup ---
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -31,10 +35,6 @@ def draw_ir_data(surface, data):
         label = font.render(f"IR {i+1}: {val}", True, (0, 0, 0))
         surface.blit(label, (50, y))
         y += 40
-
-print("🔌 Connecting to Roomba...")
-robot = Create3(Bluetooth(ROBOT_NAME))
-print("✅ Connected to Roomba")
 
 # --- Pygame Loop ---
 async def run_pygame():

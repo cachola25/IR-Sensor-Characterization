@@ -8,15 +8,15 @@ from irobot_edu_sdk.backend.bluetooth import Bluetooth
 from irobot_edu_sdk.robots import Create3
 from irobot_edu_sdk.event import event
 from tensorflow.keras.models import load_model
-nest_asyncio.apply()
 
+nest_asyncio.apply()
 # --- Constants ---
 WIDTH, HEIGHT = 1200, 700
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 RED_TRANSPARENT = (255, 0, 0, 80)
 BLACK = (0, 0, 0)
-MAX_SENSOR_VALUE = 4095
+MAX_SENSOR_VALUE = 3000
 MODEL_PATH = '../combinationOfAllData.keras'
 ZONE = "Zone 1"  # Example zone
 OUTPUT_FILE = "roomba_data.csv"
@@ -46,7 +46,8 @@ model = load_model(MODEL_PATH)
 
 # --- Roomba Setup ---
 try:
-    robot = Create3(Bluetooth("Roomba"))
+    # robot = Create3(Bluetooth("Roomba"))
+    robot = Create3(Bluetooth("CapstoneRobot1"))
     print("✅ Connected to Roomba via Bluetooth")
 except Exception as e:
     print(f"❌ Failed to connect to Roomba: {e}")
@@ -57,7 +58,7 @@ except Exception as e:
 async def play(robot):
     global rows, printed, out_file, predicted_distance, predicted_start_deg, predicted_end_deg
     print("Roomba play event triggered — starting sensor + prediction loop...")
-
+    task = asyncio.create_task(run_game())
     while True:
         try:
             sensors = await robot.get_ir_proximity()
@@ -78,11 +79,11 @@ async def play(robot):
             input_data = np.array(ir_values).reshape(1, -1) / MAX_SENSOR_VALUE
             prediction = model.predict(input_data, verbose=0)[0]
             predicted_distance, start_rad, end_rad = prediction
+            print(f"🔮 Prediction -> dist: {predicted_distance:.2f}, angle: {predicted_start_deg:.2f}-{predicted_end_deg:.2f}")
             predicted_distance *= 550  # Scale to match grid radius
             predicted_start_deg = np.degrees(start_rad) % 180
             predicted_end_deg = np.degrees(end_rad) % 180
 
-            print(f"🔮 Prediction -> dist: {predicted_distance:.2f}, angle: {predicted_start_deg:.2f}-{predicted_end_deg:.2f}")
 
             if rows >= NUM_ROWS and not printed:
                 await robot.play_note(440, 0.25)
@@ -185,23 +186,18 @@ def draw_prediction_cone(surface, center, radius, start_angle, end_angle, distan
     surface.blit(arc_surface, (center[0] - radius, center[1] - radius))
 
 # --- Main Runner ---
-async def main():
+def main():
     try:
         if not TEST_MODE:
             print("🔌 Attempting to connect to Roomba...")
-            robot.play()
             print("✅ Roomba play triggered! Press the Play button on the robot if you haven’t already.")
-
-            tasks = [run_game(), asyncio.Event().wait()]
+            robot.play()
         else:
             print("🧪 TEST MODE: Running with fake sensor data!")
             tasks = [run_game(), fake_prediction_loop()]
-
-        await asyncio.gather(*[asyncio.create_task(t) for t in tasks])
 
     except Exception as e:
         print(f"🔥 Could not connect to Roomba: {e}")
 
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+    main()
