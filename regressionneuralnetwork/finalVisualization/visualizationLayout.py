@@ -16,6 +16,7 @@ NUM_ROWS = 100
 ir_values = [0] * 7
 rows = 0
 window_open = True
+printed = False
 
 # --- Pygame Setup ---
 pygame.init()
@@ -23,7 +24,6 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Roomba IR Viewer")
 clock = pygame.time.Clock()
 
-# --- Draw IR Values ---
 def draw_ir_data(surface, data):
     font = pygame.font.SysFont(None, 32)
     y = 50
@@ -61,18 +61,13 @@ async def play(robot):
     task = asyncio.create_task(run_pygame())
     print("📡 Starting IR collection (no play button required)...")
     while rows < NUM_ROWS and window_open:
-        try:
-            sensors = await robot.get_ir_proximity()
-            print(f"🧪 Raw sensor result: {sensors}")  # ← DEBUG LINE
-
-            if sensors and sensors.sensors and len(sensors.sensors) == 7:
-                ir_values[:] = sensors.sensors
-                rows += 1
-                print(f"📦 Row {rows}: {ir_values}")
-            else:
-                print("⚠️ Skipped invalid sensor data")
-        except Exception as e:
-            print(f"🔥 IR fetch error: {e}")
+        sensors = await robot.get_ir_proximity()
+        if sensors and sensors.sensors and len(sensors.sensors) == 7:
+            ir_values[:] = sensors.sensors
+            rows += 1
+            print(f"📦 Row {rows}: {ir_values}")
+        else:
+            print("⚠️ Skipped invalid sensor data")
         await asyncio.sleep(0.1)
 
 
