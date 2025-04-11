@@ -2,7 +2,7 @@ import pygame
 import asyncio
 import nest_asyncio
 from irobot_edu_sdk.backend.bluetooth import Bluetooth
-from irobot_edu_sdk.robots import Create3
+from irobot_edu_sdk.robots import event, Create3
 
 nest_asyncio.apply()
 
@@ -32,6 +32,10 @@ def draw_ir_data(surface, data):
         surface.blit(label, (50, y))
         y += 40
 
+print("🔌 Connecting to Roomba...")
+robot = Create3(Bluetooth(ROBOT_NAME))
+print("✅ Connected to Roomba")
+
 # --- Pygame Loop ---
 async def run_pygame():
     global window_open
@@ -51,9 +55,10 @@ async def run_pygame():
         pygame.quit()
 
 # --- Roomba Collector ---
-# --- Roomba Collector ---
-async def collect_ir_data(robot):
+@event(robot.when_play)
+async def play(robot):
     global rows, ir_values
+    task = asyncio.create_task(run_pygame())
     print("📡 Starting IR collection (no play button required)...")
     while rows < NUM_ROWS and window_open:
         try:
@@ -70,28 +75,21 @@ async def collect_ir_data(robot):
             print(f"🔥 IR fetch error: {e}")
         await asyncio.sleep(0.1)
 
-    print("✅ Collected 100 rows. You can still view them in the window.")
 
-
-# --- Main ---
-async def main():
-    print("🔌 Connecting to Roomba...")
-    robot = Create3(Bluetooth(ROBOT_NAME))
-    print("✅ Connected to Roomba")
-
-    pygame_task = asyncio.create_task(run_pygame())
-    roomba_task = asyncio.create_task(collect_ir_data(robot))
-
-    await pygame_task
-
-    if not roomba_task.done():
-        roomba_task.cancel()
+    if not task.done():
+        task.cancel()
         try:
-            await roomba_task
+            await task
         except asyncio.CancelledError:
             print("🛑 Roomba task cancelled")
 
     print("✅ Clean exit")
+    print("✅ Collected 100 rows. You can still view them in the window.")
+
+
+# --- Main ---
+def main():
+    robot.play()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
