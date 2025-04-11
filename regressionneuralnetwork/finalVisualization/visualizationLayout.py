@@ -3,6 +3,7 @@ import asyncio
 import nest_asyncio
 from irobot_edu_sdk.backend.bluetooth import Bluetooth
 from irobot_edu_sdk.robots import Create3
+from irobot_edu_sdk.event import event
 
 nest_asyncio.apply()
 
@@ -16,6 +17,7 @@ NUM_ROWS = 100
 ir_values = [0] * 7
 rows = 0
 window_open = True
+printed = False
 
 # --- Pygame Setup ---
 pygame.init()
@@ -23,7 +25,6 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Roomba IR Viewer")
 clock = pygame.time.Clock()
 
-# --- Draw IR Values ---
 def draw_ir_data(surface, data):
     font = pygame.font.SysFont(None, 32)
     y = 50
@@ -32,7 +33,6 @@ def draw_ir_data(surface, data):
         surface.blit(label, (50, y))
         y += 40
 
-# --- Pygame Loop ---
 async def run_pygame():
     global window_open
     try:
@@ -50,48 +50,35 @@ async def run_pygame():
     finally:
         pygame.quit()
 
-# --- Roomba Collector ---
-# --- Roomba Collector ---
-async def collect_ir_data(robot):
+async def collect_data(robot):
     global rows, ir_values
-    print("📡 Starting IR collection (no play button required)...")
+    print("📡 IR collection running...")
     while rows < NUM_ROWS and window_open:
-        try:
-            sensors = await robot.get_ir_proximity()
-            print(f"🧪 Raw sensor result: {sensors}")  # ← DEBUG LINE
-
-            if sensors and sensors.sensors and len(sensors.sensors) == 7:
-                ir_values[:] = sensors.sensors
-                rows += 1
-                print(f"📦 Row {rows}: {ir_values}")
-            else:
-                print("⚠️ Skipped invalid sensor data")
-        except Exception as e:
-            print(f"🔥 IR fetch error: {e}")
+        sensors = await robot.get_ir_proximity()
+        if sensors and sensors.sensors and len(sensors.sensors) == 7:
+            ir_values[:] = sensors.sensors
+            rows += 1
+            print(f"📦 Row {rows}: {ir_values}")
+        else:
+            print("⚠️ Skipped invalid sensor data")
         await asyncio.sleep(0.1)
 
-    print("✅ Collected 100 rows. You can still view them in the window.")
+@event(robot := Create3(Bluetooth(ROBOT_NAME)).when_play)
+async def handle_play(robot):
+    print("▶️ Play button pressed. Starting collection & visualization...")
+    try:
+        # Run both tasks together
+        await asyncio.gather(
+            run_pygame(),
+            collect_data(robot)
+        )
+    except asyncio.CancelledError:
+        print("🛑 Tasks cancelled")
+    finally:
+        await robot.play_note(440, 0.25)
+        print("✅ Done — shutting down")
 
-
-# --- Main ---
-async def main():
-    print("🔌 Connecting to Roomba...")
-    robot = Create3(Bluetooth(ROBOT_NAME))
-    print("✅ Connected to Roomba")
-
-    pygame_task = asyncio.create_task(run_pygame())
-    roomba_task = asyncio.create_task(collect_ir_data(robot))
-
-    await pygame_task
-
-    if not roomba_task.done():
-        roomba_task.cancel()
-        try:
-            await roomba_task
-        except asyncio.CancelledError:
-            print("🛑 Roomba task cancelled")
-
-    print("✅ Clean exit")
-
-if __name__ == "__main__":
-    asyncio.run(main())
+# --- Start the robot (and wait for Play) ---
+print("🔌 Connecting to Roomba...")
+print("✅ Connected — waiting for Play button...")
+Create3(Bluetooth(ROBOT_NAME)).play()
