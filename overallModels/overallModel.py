@@ -40,16 +40,16 @@ class overallModel:
     
     def predict(self,ir_data):
         copied_input = ir_data.copy()
-        predicted_probabilities = self.single_label_model.predict(ir_data)[0]
+        predicted_probabilities = self.single_label_model.predict(ir_data,verbose=0)[0]
         predicted_class = np.argmax(predicted_probabilities)
-        print(f"Predicted Number of Objects: {predicted_class}")
-        print(f"Predicted Probabilites: {predicted_probabilities}")
+        # print(f"Predicted Number of Objects: {predicted_class}")
+        # print(f"Predicted Probabilites: {predicted_probabilities}")
         ret = []
 
         if predicted_class != 0:
             if predicted_class == 1:
 
-                predicted_output = self.regression_model.predict(ir_data[0])
+                predicted_output = self.regression_model.predict(ir_data[0],verbose=0)
                 predicted_distance, predicted_start_angle, predicted_end_angle = predicted_output[0]
                 predicted_start_angle_deg = np.degrees(predicted_start_angle)
                 predicted_end_angle_deg = np.degrees(predicted_end_angle)
@@ -60,9 +60,9 @@ class overallModel:
                     predicted_end_angle_deg -= 180
 
                 # Print predictions
-                print(f"Predicted Distance: {predicted_distance}")
-                print(f"Start Angle: {predicted_start_angle_deg} degrees")
-                print(f"End Angle: {predicted_end_angle_deg} degrees")
+                # print(f"Predicted Distance: {predicted_distance}")
+                # print(f"Start Angle: {predicted_start_angle_deg} degrees")
+                # print(f"End Angle: {predicted_end_angle_deg} degrees")
                 ret.append((predicted_distance,predicted_start_angle_deg,predicted_end_angle_deg))
 
             elif predicted_class == 2:
@@ -70,9 +70,9 @@ class overallModel:
             
                 # first peak
                 input1 = self.create_masked_input(copied_input[0], peak1)
-                print(f"[Object 1] Masked IR values before normalization: {input1}")
+                # print(f"[Object 1] Masked IR values before normalization: {input1}")
                 input1_normalized = input1 / self.max_value
-                predicted_output = self.regression_model.predict(input1_normalized[np.newaxis, :])
+                predicted_output = self.regression_model.predict(input1_normalized[np.newaxis, :],verbose=0)
 
                 predicted_distance, predicted_start_angle, predicted_end_angle = predicted_output[0]
                 predicted_start_angle_deg = np.degrees(predicted_start_angle)
@@ -84,14 +84,14 @@ class overallModel:
                     predicted_end_angle_deg -= 180
 
                 # Print predictions
-                print(f"[Object 1] Predicted Distance: {predicted_distance:.2f} inches; Start Angle: {predicted_start_angle_deg:.2f} degrees; End Angle: {predicted_end_angle_deg:.2f} degrees")
+                # print(f"[Object 1] Predicted Distance: {predicted_distance:.2f} inches; Start Angle: {predicted_start_angle_deg:.2f} degrees; End Angle: {predicted_end_angle_deg:.2f} degrees")
                 ret.append((predicted_distance,predicted_start_angle_deg,predicted_end_angle_deg))
 
                 # second peak
                 input2 = self.create_masked_input(copied_input[0], peak2)
-                print(f"[Object 1] Masked IR values before normalization: {input2}")
+                # print(f"[Object 1] Masked IR values before normalization: {input2}")
                 input2_normalized = input2 / self.max_value
-                predicted_output = self.regression_model.predict(input2_normalized[np.newaxis, :])
+                predicted_output = self.regression_model.predict(input2_normalized[np.newaxis, :],verbose=0)
 
                 predicted_distance, predicted_start_angle, predicted_end_angle = predicted_output[0]
                 predicted_start_angle_deg = np.degrees(predicted_start_angle)
@@ -103,5 +103,6 @@ class overallModel:
                     predicted_end_angle_deg -= 180
 
                 # Print predictions
-                print(f"[Object 2] Predicted Distance: {predicted_distance:.2f} inches; Start Angle: {predicted_start_angle_deg:.2f} degrees; End Angle: {predicted_end_angle_deg:.2f} degrees")
+                # print(f"[Object 2] Predicted Distance: {predicted_distance:.2f} inches; Start Angle: {predicted_start_angle_deg:.2f} degrees; End Angle: {predicted_end_angle_deg:.2f} degrees")
                 ret.append((predicted_distance,predicted_start_angle_deg,predicted_end_angle_deg))
+        return ret

@@ -11,6 +11,6 @@ script_start_time = time.time()
 # Load and preprocess the data
 test_input = np.array([[1,28,97,75,16,101,11]], dtype=float)
 final_model = overallModel()
-final_model.predict(test_input)
-    
+prediction = final_model.predict(test_input)
+print(prediction)
 print(f"Total script execution time: {time.time() - script_start_time:.4f} seconds.")
