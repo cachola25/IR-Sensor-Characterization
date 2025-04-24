@@ -115,8 +115,10 @@ history = model.fit(x_train, y_train,
                     callbacks=[early_stopping],
                     verbose=1)
 
-model.save('differentSizes2.keras')
-print("Model saved as 'differentSizes2.keras\n'")
+#model.save('differentSizes2.keras')
+#print("Model saved as 'differentSizes2.keras\n'")
+model.save('combinationOfAllData.keras')
+print("Model saved as 'combinationOfAllData.keras\n'")
 
 # Step 6: Model Prediction
 # Evaluate the model on the validation set
