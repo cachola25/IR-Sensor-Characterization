@@ -1,18 +1,28 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
-import time
+import os
+
+def custom_accuracy(y_true, y_pred):
+    dist_ok = tf.less_equal(tf.abs(y_true[:, 0] - y_pred[:, 0]), 0.5)
+    start_ok = tf.equal(tf.round(y_true[:, 1]), tf.round(y_pred[:, 1]))
+    end_ok   = tf.equal(tf.round(y_true[:, 2]), tf.round(y_pred[:, 2]))
+    all_ok = tf.logical_and(dist_ok, tf.logical_and(start_ok, end_ok))
+    return tf.reduce_mean(tf.cast(all_ok, tf.float32))
 
 def compute_error(predicted, actual):
-    """
-    Compute absolute error for distance and angles.
-    :param predicted: Predicted values [distance, start_angle, end_angle]
-    :param actual: Ground truth values [distance, start_angle, end_angle]
-    :return: Error array [distance_error, start_angle_error, end_angle_error]
-    """
-    distance_error = np.abs(predicted[0] - actual[0])
-    start_angle_error = np.abs(predicted[1] - actual[1])
-    end_angle_error = np.abs(predicted[2] - actual[2])
+    # Distance rule
+    dist_diff = np.abs(predicted[0] - actual[0])
+    distance_error = 0.0 if dist_diff <= 0.5 else dist_diff
+
+    # Start angle rule
+    start_diff = np.abs(predicted[1] - actual[1])
+    start_angle_error = 0.0 if np.round(predicted[1]) == np.round(actual[1]) else start_diff
+
+    # End angle rule
+    end_diff = np.abs(predicted[2] - actual[2])
+    end_angle_error = 0.0 if np.round(predicted[2]) == np.round(actual[2]) else end_diff
+
     return distance_error, start_angle_error, end_angle_error
 
 def create_error_heatmap(predictions, ground_truth, max_distance=12, angle_increment=20, distance_increment=2):
@@ -82,35 +92,21 @@ def create_error_heatmap(predictions, ground_truth, max_distance=12, angle_incre
     plt.show()
     
 # Load the trained models
-start_time = time.time()
-model = tf.keras.models.load_model('differentSizes2.keras')
+script_dir = os.path.dirname(os.path.realpath(__file__))
+project_root = os.path.abspath(os.path.join(script_dir, ".."))
+data_dir = os.path.join(project_root, "data")
+models_dir = os.path.join(project_root, "models")
+model = tf.keras.models.load_model(
+    os.path.join(models_dir, "rnn.keras"),
+    custom_objects={'custom_accuracy': custom_accuracy},
+    compile=False 
+)
 
-
-data = np.loadtxt("differentSizesData/testDifferentSizesData.csv", delimiter=',')
+data = np.loadtxt(os.path.join(data_dir, "differentSizesData/testDifferentSizesData.csv"), delimiter=',')
 sensor_data = data[:, :7]
 polar_coordinates = data[:, 7:]
 max_value = np.max(sensor_data)
 
-# Step 6: Model Prediction
-test_input = np.array([[144,17,24,23,19,9,15]]) / max_value
-
-predicted_output = model.predict(test_input)
-predicted_distance, predicted_start_angle, predicted_end_angle = predicted_output[0]
-predicted_start_angle_deg = np.degrees(predicted_start_angle)
-predicted_end_angle_deg = np.degrees(predicted_end_angle)
-
-
-
-if predicted_start_angle_deg > 180:
-    predicted_start_angle_deg -= 180
-if predicted_end_angle_deg > 180:
-    predicted_end_angle_deg -= 180
-# Print predictions
-print(f"Predicted Distance: {predicted_distance}")
-print(f"Start Angle: {predicted_start_angle_deg} degrees")
-print(f"End Angle: {predicted_end_angle_deg} degrees")
-
-# ----------------------------------------------#
 # The array of test inputs to calculate error from each bin
 diagram_inputs = (sensor_data / max_value)
 
@@ -130,9 +126,6 @@ predictions[:, 1:] = np.degrees(predictions[:, 1:])
 # return predictions and ground truth
 np.save("predictions.npy", predictions)
 np.save("ground_truth.npy", ground_truth)
-end_time = time.time()
-
-print(f"Execution Time: {end_time - start_time} seconds")
 
 predictions = np.load("predictions.npy")
 ground_truth = np.load("ground_truth.npy")
