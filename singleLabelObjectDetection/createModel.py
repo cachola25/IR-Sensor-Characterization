@@ -55,7 +55,7 @@ tuner = kt.RandomSearch(
     objective='val_accuracy',
     max_trials=10,
     executions_per_trial=1,
-    directory='my_dir',
+    directory='tuning_dir',
     project_name='outcome_prediction_tuning'
 )
 

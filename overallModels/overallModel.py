@@ -3,7 +3,6 @@ import numpy as np
 import tensorflow as tf
 
 class overallModel:
-    
     def __init__(self):
         self.single_label_model = tf.keras.models.load_model('outcomePredictionModel3.keras')
         self.regression_model = tf.keras.models.load_model('differentSizes2.keras')

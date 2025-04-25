@@ -71,7 +71,7 @@ tuner = kt.RandomSearch(
     objective='val_loss',
     max_trials=10,
     executions_per_trial=1,
-    directory='my_dir',
+    directory='tuning_dir',
     project_name='ir_sensor_tuning',
     #overwrite=True
 )

@@ -19,7 +19,6 @@ BLACK = (0, 0, 0)
 MAX_SENSOR_VALUE = 3000
 MODEL_PATH = '../combinationOfAllData.keras'
 ZONE = "Zone 1"  # Example zone
-OUTPUT_FILE = "roomba_data.csv"
 NUM_ROWS = 100  # Example limit
 TEST_MODE = False  # Set to False when near the Roomba
 
@@ -29,7 +28,6 @@ predicted_end_deg = 90
 predicted_distance = 1  # Start with a visible non-zero value
 rows = 0
 printed = False
-out_file = open(OUTPUT_FILE, "w")
 selected_zones = ZONE
 
 # --- Pygame Setup ---
@@ -69,12 +67,7 @@ async def play(robot):
             ir_values = sensors.sensors
 
             print(f"IR sensors: {ir_values}")
-
-            # Save to file
-            sensor_string = f"\"{selected_zones}\",{','.join(map(str, ir_values))}\n"
-            out_file.write(sensor_string)
-            rows += 1
-
+            
             # Make prediction
             input_data = np.array(ir_values).reshape(1, -1) / MAX_SENSOR_VALUE
             prediction = model.predict(input_data, verbose=0)[0]
