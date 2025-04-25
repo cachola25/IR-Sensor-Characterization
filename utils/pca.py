@@ -1,4 +1,5 @@
 import os
+import joblib
 import pandas as pd
 from sklearn.decomposition import PCA
 
@@ -48,6 +49,9 @@ if model == REGRESSION_MODEL:
     filename = get_name(file_path)
     output_path = os.path.join(data_dir, filename)
     combined_df.to_csv(output_path, index=False, header=None)
+    pca_path = os.path.join(project_root, "models", "rnn_pca_model.joblib")
+    joblib.dump(pca_model, pca_path)
+    print(f"PCA model saved to {pca_path}")
 else:
     file_path = os.path.join(data_dir, "multi_object_data.csv")
     df = pd.read_csv(file_path, header=None)
@@ -69,4 +73,7 @@ else:
     output_path = os.path.join(data_dir, filename)
     output_path = os.path.join(data_dir, filename)
     combined_df.to_csv(output_path, index=False, header=None)
+    pca_path = os.path.join(project_root, "models", "single_label_pca_model.joblib")
+    joblib.dump(pca_model, pca_path)
+    print(f"PCA model saved to {pca_path}")
 

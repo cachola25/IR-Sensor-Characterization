@@ -1,7 +1,10 @@
 import pygame
 import sys
+import os
 import math
+import joblib
 import asyncio
+import pandas as pd
 import numpy as np
 import nest_asyncio
 from irobot_edu_sdk.backend.bluetooth import Bluetooth
@@ -16,11 +19,23 @@ WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 RED_TRANSPARENT = (255, 0, 0, 80)
 BLACK = (0, 0, 0)
-MAX_SENSOR_VALUE = 3000
-MODEL_PATH = '../combinationOfAllData.keras'
+script_dir = os.path.dirname(os.path.realpath(__file__))
+project_root = os.path.abspath(os.path.join(script_dir, "../.."))
+data_dir = os.path.join(project_root, "data")
+models_dir = os.path.join(project_root, "models")
+MODEL_PATH = os.path.join(models_dir, "rnn.keras")
+pca = joblib.load(os.path.join(models_dir, "rnn_pca_model.joblib"))
+raw = pd.read_csv(os.path.join(data_dir, "pca_combinationOfAllData.csv"), header=None).to_numpy()
+raw_matrix = pd.read_csv(os.path.join(data_dir, "pca_combinationOfAllData.csv"), header=None).to_numpy()
+pca_space = raw_matrix[:, :7]
+PCA_MAX = float(np.max(pca_space))
+MAX_SENSOR_VALUE = float(raw[:, :7].max())
+MAX_DISTANCE_IN = 10.0
 ZONE = "Zone 1"  # Example zone
 NUM_ROWS = 100  # Example limit
 TEST_MODE = False  # Set to False when near the Roomba
+RADIUS = 550                           
+PIXEL_SCALE = 55 # pixels per inch
 
 # --- State ---
 predicted_start_deg = 90
@@ -36,16 +51,16 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Live Roomba Object Prediction")
 clock = pygame.time.Clock()
 roomba_pos = [WIDTH // 2, 600]
-roomba_image = pygame.image.load("iRobot.png")
+roomba_image = pygame.image.load(os.path.join(script_dir, "iRobot.png"))
 roomba_image = pygame.transform.scale(roomba_image, (350, 200))
 
 # --- Load Model ---
-model = load_model(MODEL_PATH)
+model = load_model(MODEL_PATH,compile=False)
 
 # --- Roomba Setup ---
 try:
     # robot = Create3(Bluetooth("Roomba"))
-    robot = Create3(Bluetooth("CapstoneRobot1"))
+    robot = Create3(Bluetooth("Roomba"))
     print("✅ Connected to Roomba via Bluetooth")
 except Exception as e:
     print(f"❌ Failed to connect to Roomba: {e}")
@@ -69,22 +84,22 @@ async def play(robot):
             print(f"IR sensors: {ir_values}")
             
             # Make prediction
-            input_data = np.array(ir_values).reshape(1, -1) / MAX_SENSOR_VALUE
-            prediction = model.predict(input_data, verbose=0)[0]
-            predicted_distance, start_rad, end_rad = prediction
-            print(f"🔮 Prediction -> dist: {predicted_distance:.2f}, angle: {predicted_start_deg:.2f}-{predicted_end_deg:.2f}")
-            predicted_distance *= 550  # Scale to match grid radius
-            predicted_start_deg = np.degrees(start_rad) % 180
-            predicted_end_deg = np.degrees(end_rad) % 180
+            raw_in  = np.array(ir_values).reshape(1, -1)
+            pca_in  = pca.transform(raw_in)
+            norm_pca = pca_in / PCA_MAX
+            dist_in, start_rad, end_rad = model.predict(norm_pca, verbose=0)[0]
+            predicted_start_deg = (np.degrees(start_rad)) % 180
+            predicted_end_deg   = (np.degrees(end_rad)) % 180
+            # predicted_distance = dist_in * PIXEL_SCALE
+            predicted_distance = dist_in * 550
 
+            print(f"🔮 Prediction → dist(in)= {dist_in:.2f}, angles= {predicted_start_deg:.1f}-{predicted_end_deg:.1f}")
 
             if rows >= NUM_ROWS and not printed:
                 await robot.play_note(440, 0.25)
-                out_file.close()
                 printed = True
                 print("✅ Data collection complete.")
                 break
-
             await asyncio.sleep(0.1)
 
         except Exception as e:
@@ -100,7 +115,7 @@ async def fake_prediction_loop():
         input_data = np.array(ir_values).reshape(1, -1) / MAX_SENSOR_VALUE
         prediction = model.predict(input_data, verbose=0)[0]
         predicted_distance, start_rad, end_rad = prediction
-        predicted_distance *= 550  # Scale to match grid radius
+        predicted_distance *= RADIUS  # Scale to match grid radius
         predicted_start_deg = np.degrees(start_rad) % 180
         predicted_end_deg = np.degrees(end_rad) % 180
 
@@ -117,8 +132,8 @@ async def run_game():
 
         screen.fill(WHITE)
         screen.blit(roomba_image, (roomba_pos[0] - roomba_image.get_width() // 2, roomba_pos[1] - roomba_image.get_height() // 2))
-        draw_arc_with_grid(screen, roomba_pos, 550, 0, 180, 20)
-        draw_prediction_cone(screen, roomba_pos, 550, predicted_start_deg, predicted_end_deg, predicted_distance)
+        draw_arc_with_grid(screen, roomba_pos, RADIUS, 0, 180, 20)
+        draw_prediction_cone(screen, roomba_pos, RADIUS, predicted_start_deg, predicted_end_deg, predicted_distance)
 
         print(f"[DRAW] dist={predicted_distance:.2f}, start={predicted_start_deg:.2f}, end={predicted_end_deg:.2f}")
 
