@@ -6,5 +6,3 @@ __pycache__/
 output.txt
 *.pkl
 *.txt
-regressionneuralnetwork/tuning_dir
-singleLabelObjectDetection/tuning_dir

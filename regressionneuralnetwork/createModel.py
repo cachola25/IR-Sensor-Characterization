@@ -73,8 +73,8 @@ polar_coordinates[:, 1:] = np.radians(polar_coordinates[:, 1:])
 tuner = kt.RandomSearch(
     build_model,
     objective='val_loss',
-    max_trials=10,
-    executions_per_trial=1,
+    max_trials=20,
+    executions_per_trial=2,
     directory='tuning_dir',
     project_name='ir_sensor_tuning',
     overwrite=False
@@ -82,7 +82,7 @@ tuner = kt.RandomSearch(
 
 # Early stopping to avoid overfitting
 early_stopping = EarlyStopping(
-    monitor='val_loss', patience=50, restore_best_weights=True)
+    monitor='val_loss', patience=100, restore_best_weights=True)
 
 # Split the data into training and validation sets
 split_index = int(0.8 * len(sensor_data))
@@ -96,7 +96,7 @@ tuner.search(x_train, y_train,
              epochs=100,
              validation_data=(x_val, y_val),
              callbacks=[early_stopping],
-             verbose=1,
+             verbose=0,
              )
 
 # Get the optimal hyperparameters
@@ -113,10 +113,10 @@ print(f"Optimal learning rate: {best_hps.get('learning_rate')}\n")
 # Step 5: Build the model with the optimal hyperparameters and train it
 model = tuner.hypermodel.build(best_hps)
 history = model.fit(x_train, y_train,
-                    epochs=500,
+                    epochs=1000,
                     validation_data=(x_val, y_val),
                     callbacks=[early_stopping],
-                    verbose=1)
+                    verbose=0)
 
 # Save the model to the model's folder
 model_name = "rnn.keras"
