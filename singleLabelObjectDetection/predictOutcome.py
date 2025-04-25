@@ -8,14 +8,14 @@ script_start_time = time.time()
 
 # Load the trained model for object prediction
 load_start_time = time.time()
-model = tf.keras.models.load_model('outcomePredictionModel3.keras')
+model = tf.keras.models.load_model('outcomePredictionModel4.keras')
 load_end_time = time.time()
 
 print(f"Model loaded in {load_end_time - load_start_time:.4f} seconds.")
 
 # Load and preprocess the data
-test_input = np.array([[43,110,16,16,20,7,94]], dtype=float)
-data = np.loadtxt("test3.csv", delimiter=',')
+test_input = np.array([[7,0,3,993,3,7,12]], dtype=float)
+data = np.loadtxt("trainData.csv", delimiter=',')
 sensor_data = data[:, :7]
 max_value = np.max(sensor_data)
 test_input /= max_value 

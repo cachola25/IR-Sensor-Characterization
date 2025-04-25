@@ -28,14 +28,14 @@ def build_model(hp):
     return model
 
 # Step 1: Load Data from CSV 
-file_path_original = "pca_test_data.csv"
+file_path_original = "trainData.csv"
 data_original = pd.read_csv(file_path_original, header=None)
 
 # Shuffle the rows randomly
 shuffled_data = data_original.sample(frac=1, random_state=42).reset_index(drop=True)
 
 # Save the shuffled data to a new CSV file
-file_path_shuffle = "pca_test_data_shuffled.csv"
+file_path_shuffle = "trainDataShuffled.csv"
 shuffled_data.to_csv(file_path_shuffle, index=False, header=False)
 
 # Load the shuffled data
@@ -95,8 +95,8 @@ history = model.fit(x_train, y_train,
                     callbacks=[early_stopping],
                     verbose=1)
 
-model.save('outcomePredictionModel3.keras')
-print("Model saved as 'outcomePredictionModel3.keras'")
+model.save('outcomePredictionModel4.keras')
+print("Model saved as 'outcomePredictionModel4.keras'")
 
 # Step 6: Model Prediction
 test_input = np.array([[0,4,1,10,3,4,0]]) / max_value

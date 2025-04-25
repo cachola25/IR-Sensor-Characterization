@@ -35,10 +35,10 @@ def create_masked_input(sensor_values, peak_idx, window_size=1, mask_value=3):
 script_start_time = time.time()
 
 # load single-label model to predict number of objects
-model = tf.keras.models.load_model('outcomePredictionModel3.keras')
+model = tf.keras.models.load_model('outcomePredictionModel4.keras')
 
 # Load and preprocess the data
-test_input = np.array([[53, 18, 49, 993, 662, 7, 12]], dtype=float)
+test_input = np.array([[12, 12, 49, 993, 662, 7, 12]], dtype=float)
 copied_input = test_input.copy()
 data = np.loadtxt("test3.csv", delimiter=',')
 sensor_data = data[:, :7]
