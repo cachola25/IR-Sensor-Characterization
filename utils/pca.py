@@ -12,7 +12,9 @@ def get_name(file_path):
         i += 1
     return filename
 
-prompt = "Which model is this data for?\n(0) Regression Neural Network\n(1) Single-Label Object Model\n> "
+prompt = "Which model is this data for?\n" \
+         "(0) Regression Neural Network\n" \
+         "(1) Single-Label Object Model\n> "
 model = input(prompt).strip()
 while model not in {"0", "1"}:
     print("Invalid input. Please enter 0 or 1.")
