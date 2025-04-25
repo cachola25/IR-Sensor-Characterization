@@ -2,6 +2,7 @@ import numpy as np
 import tensorflow as tf
 import keras_tuner as kt
 import pandas as pd
+import os
 from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.callbacks import EarlyStopping
@@ -28,18 +29,17 @@ def build_model(hp):
     return model
 
 # Step 1: Load Data from CSV 
-file_path_original = "pca_test_data.csv"
+script_dir = os.path.dirname(os.path.realpath(__file__))
+project_root = os.path.abspath(os.path.join(script_dir, ".."))
+data_dir = os.path.join(project_root, "data")
+models_dir = os.path.join(project_root, "models")
+
+# Step 1: Load Data from CSV
+file_path_original = os.path.join(data_dir,"multi_object_data.csv")
 data_original = pd.read_csv(file_path_original, header=None)
 
-# Shuffle the rows randomly
-shuffled_data = data_original.sample(frac=1, random_state=42).reset_index(drop=True)
-
-# Save the shuffled data to a new CSV file
-file_path_shuffle = "pca_test_data_shuffled.csv"
-shuffled_data.to_csv(file_path_shuffle, index=False, header=False)
-
-# Load the shuffled data
-data = np.loadtxt(file_path_shuffle, delimiter=',')
+# Shuffle the rows and convert directly to NumPy
+data = data_original.sample(frac=1, random_state=42).reset_index(drop=True).to_numpy()
 
 # Step 2: Separate the Data
 sensor_data = data[:, :7]
@@ -95,14 +95,12 @@ history = model.fit(x_train, y_train,
                     callbacks=[early_stopping],
                     verbose=1)
 
-model.save('outcomePredictionModel3.keras')
-print("Model saved as 'outcomePredictionModel3.keras'")
+model_name = "single_label.keras"
+filename = os.path.join(models_dir, model_name)
+model.save(filename)
+print(f"Model saved as {model_name}\n")
 
 # Step 6: Model Prediction
-test_input = np.array([[0,4,1,10,3,4,0]]) / max_value
-predicted_probabilities = model.predict(test_input)[0]
-predicted_class = np.argmax(predicted_probabilities)
-print(f"Predicted Number of Objects: {predicted_class}")
 val_loss, val_accuracy = model.evaluate(x_val, y_val, verbose=1)
 print(f"Validation Loss: {val_loss:.4f}")
 print(f"Validation Accuracy: {val_accuracy:.4f}")

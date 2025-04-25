@@ -2,6 +2,9 @@ import os
 import pandas as pd
 from sklearn.decomposition import PCA
 
+REGRESSION_MODEL = "0"
+SINGLE_LABEL_MODEL = "1"
+
 def get_name(file_path):
     name, ext = os.path.splitext("pca_" + os.path.basename(file_path))
     base = name
@@ -19,12 +22,13 @@ model = input(prompt).strip()
 while model not in {"0", "1"}:
     print("Invalid input. Please enter 0 or 1.")
     model = input(prompt).strip()
+    
 script_dir = os.path.dirname(os.path.realpath(__file__))
 project_root = os.path.abspath(os.path.join(script_dir, ".."))
 data_dir = os.path.join(project_root, "data")
 
-if model == "0":
-    file_path = os.path.join(data_dir, "differentSizesData/differentSizesData.csv")
+if model == REGRESSION_MODEL:
+    file_path = os.path.join(data_dir, "newData/combinationOfAllData.csv")
     df = pd.read_csv(file_path, header=None)
     df.columns = ['L3','L2','L1','M','R1','R2','R3','distance','start_angle','end_angle']
     sensor_cols = ['L3','L2','L1','M','R1','R2','R3']

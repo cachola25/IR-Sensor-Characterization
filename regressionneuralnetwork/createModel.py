@@ -1,9 +1,10 @@
+import os
 import numpy as np
 import pandas as pd
 import tensorflow as tf
 import keras_tuner as kt
-import matplotlib.pyplot as plt
 from tensorflow import keras
+import matplotlib.pyplot as plt
 from tensorflow.keras import layers, models
 from tensorflow.keras.callbacks import EarlyStopping
 
@@ -29,7 +30,12 @@ def build_model(hp):
                 metrics=['mse', custom_accuracy])
     return model
 
-
+# Define a custom accuracy metric
+"""
+dist_ok = is predicted distance within 1/2 an inch of the actual distance?
+start_ok = did the model predict the whole number of the start angle correctly?
+end_ok = did the model predict the whole number of the end angle correctly?
+"""
 def custom_accuracy(y_true, y_pred):
     dist_ok = tf.less_equal(tf.abs(y_true[:, 0] - y_pred[:, 0]), 0.5)
     start_ok = tf.equal(tf.round(y_true[:, 1]), tf.round(y_pred[:, 1]))
@@ -37,21 +43,18 @@ def custom_accuracy(y_true, y_pred):
     all_ok = tf.logical_and(dist_ok, tf.logical_and(start_ok, end_ok))
     return tf.reduce_mean(tf.cast(all_ok, tf.float32))
 
-# Step 1: Load Data from CSV
-# [sensor1, sensor2, ..., sensor7, distance, left start angle, right end angle]
+# Load the data and model folder
+script_dir = os.path.dirname(os.path.realpath(__file__))
+project_root = os.path.abspath(os.path.join(script_dir, ".."))
+data_dir = os.path.join(project_root, "data")
+models_dir = os.path.join(project_root, "models")
 
-file_path_original = "./pca_test_data.csv"
+# Step 1: Load Data from CSV
+file_path_original = os.path.join(data_dir,"pca_combinationOfAllData.csv")
 data_original = pd.read_csv(file_path_original, header=None)
 
-# Shuffle the rows randomly
-shuffled_data = data_original.sample(frac=1, random_state=42).reset_index(drop=True)
-
-# Save the shuffled data to a new CSV file
-file_path_shuffle = "./pca_test_data_shuffle.csv"  # Specify the desired output file name
-shuffled_data.to_csv(file_path_shuffle, index=False, header=False)
-
-
-data = np.loadtxt(file_path_shuffle, delimiter=',')
+# Shuffle the rows and convert directly to NumPy
+data = data_original.sample(frac=1, random_state=42).reset_index(drop=True).to_numpy()
 
 # Step 2: Separate the Data
 sensor_data = data[:, :7]
@@ -73,7 +76,7 @@ tuner = kt.RandomSearch(
     executions_per_trial=1,
     directory='tuning_dir',
     project_name='ir_sensor_tuning',
-    #overwrite=True
+    overwrite=False
 )
 
 # Early stopping to avoid overfitting
@@ -83,17 +86,17 @@ early_stopping = EarlyStopping(
 # Split the data into training and validation sets
 split_index = int(0.8 * len(sensor_data))
 x_train, x_val = sensor_data[:split_index], sensor_data[split_index:]
-y_train, y_val = polar_coordinates[:
-                                   split_index], polar_coordinates[split_index:]
+y_train, y_val = polar_coordinates[:split_index], polar_coordinates[split_index:]
 
 print(f"Beginning tuning process...")
+
 # Step 4: Perform hyperparameter search
 tuner.search(x_train, y_train,
              epochs=100,
              validation_data=(x_val, y_val),
              callbacks=[early_stopping],
-             verbose=0,
-             overwrite=False)
+             verbose=1,
+             )
 
 # Get the optimal hyperparameters
 best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
@@ -108,17 +111,17 @@ print(f"Optimal learning rate: {best_hps.get('learning_rate')}\n")
 
 # Step 5: Build the model with the optimal hyperparameters and train it
 model = tuner.hypermodel.build(best_hps)
-
 history = model.fit(x_train, y_train,
                     epochs=500,
                     validation_data=(x_val, y_val),
                     callbacks=[early_stopping],
                     verbose=1)
 
-#model.save('differentSizes2.keras')
-#print("Model saved as 'differentSizes2.keras\n'")
-model.save('combinationOfAllData.keras')
-print("Model saved as 'combinationOfAllData.keras\n'")
+# Save the model to the model's folder
+model_name = "rnn.keras"
+filename = os.path.join(models_dir, model_name)
+model.save(filename)
+print(f"Model saved as {model_name}\n")
 
 # Step 6: Model Prediction
 # Evaluate the model on the validation set
