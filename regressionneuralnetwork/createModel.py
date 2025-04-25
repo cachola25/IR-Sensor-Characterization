@@ -55,6 +55,7 @@ data_original = pd.read_csv(file_path_original, header=None)
 
 # Shuffle the rows and convert directly to NumPy
 data = data_original.sample(frac=1, random_state=42).reset_index(drop=True).to_numpy()
+# data = data_original.to_numpy()
 
 # Step 2: Separate the Data
 sensor_data = data[:, :7]
@@ -81,7 +82,7 @@ tuner = kt.RandomSearch(
 
 # Early stopping to avoid overfitting
 early_stopping = EarlyStopping(
-    monitor='val_loss', patience=10, restore_best_weights=True)
+    monitor='val_loss', patience=50, restore_best_weights=True)
 
 # Split the data into training and validation sets
 split_index = int(0.8 * len(sensor_data))

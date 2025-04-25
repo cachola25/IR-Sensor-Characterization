@@ -1,12 +1,22 @@
 import time
 import numpy as np
 import tensorflow as tf
-
+import os
 class overallModel:
     def __init__(self):
-        self.single_label_model = tf.keras.models.load_model('outcomePredictionModel3.keras')
-        self.regression_model = tf.keras.models.load_model('differentSizes2.keras')
-        self.data = np.loadtxt("test3.csv", delimiter=',')
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        project_root = os.path.abspath(os.path.join(script_dir, ".."))
+        data_dir = os.path.join(project_root, "data")
+        models_dir = os.path.join(project_root, "models")
+        self.single_label_model = tf.keras.models.load_model(
+            os.path.join(models_dir, "single_label.keras"),
+            compile=False 
+        )
+        self.regression_model = tf.keras.models.load_model(
+            os.path.join(models_dir, "rnn.keras"),
+            compile=False 
+        )
+        self.data = np.loadtxt(os.path.join(data_dir, "multi_object_data.csv"), delimiter=',')
         self.sensor_data = self.data[:, :7]
         self.max_value = np.max(self.sensor_data)
         

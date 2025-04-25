@@ -123,11 +123,5 @@ predictions = model.predict(diagram_inputs)
 # convert angles to degrees for easier comparison
 predictions[:, 1:] = np.degrees(predictions[:, 1:])
 
-# return predictions and ground truth
-np.save("predictions.npy", predictions)
-np.save("ground_truth.npy", ground_truth)
-
-predictions = np.load("predictions.npy")
-ground_truth = np.load("ground_truth.npy")
 # Create the half-circle heatmap
 create_error_heatmap(predictions, ground_truth)
