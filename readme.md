@@ -1,6 +1,7 @@
 # IR Sensor Characterization Capstone Project
-## Directory Structure <sub>Additional files in tuning_dir directories are omitted for clarity</sub>
-
+## Directory Structure 
+<sub>Additional files in tuning_dir directories are omitted for clarity</sub>
+```
 IR-Sensor-Characterization
 ├── data
 │   ├── differentSizesData
@@ -51,3 +52,4 @@ IR-Sensor-Characterization
 │
 ├── LICENSE
 └── readme.md
+```
