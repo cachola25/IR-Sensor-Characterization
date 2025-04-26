@@ -35,7 +35,7 @@ data_dir = os.path.join(project_root, "data")
 models_dir = os.path.join(project_root, "models")
 
 # Step 1: Load Data from CSV
-file_path_original = os.path.join(data_dir,"multi_object_data.csv")
+file_path_original = os.path.join(data_dir,"pca_multi_object_data.csv")
 data_original = pd.read_csv(file_path_original, header=None)
 
 # Shuffle the rows and convert directly to NumPy

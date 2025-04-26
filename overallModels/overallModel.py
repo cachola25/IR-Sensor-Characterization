@@ -2,6 +2,8 @@ import time
 import numpy as np
 import tensorflow as tf
 import os
+import joblib
+
 class overallModel:
     def __init__(self):
         script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -16,9 +18,16 @@ class overallModel:
             os.path.join(models_dir, "rnn.keras"),
             compile=False 
         )
-        self.data = np.loadtxt(os.path.join(data_dir, "multi_object_data.csv"), delimiter=',')
-        self.sensor_data = self.data[:, :7]
-        self.max_value = np.max(self.sensor_data)
+        self.rnn_pca = joblib.load(os.path.join(models_dir, "rnn_pca_model.joblib"))
+        self.single_label_pca = joblib.load(os.path.join(models_dir, "single_label_pca_model.joblib"))
+        
+        self.rnn_data = np.loadtxt(os.path.join(data_dir, "pca_combinationOfAllData.csv"), delimiter=',')
+        self.rnn_sensor_data = self.rnn_data[:, :7]
+        self.rnn_max_value = np.max(self.rnn_sensor_data)
+        
+        self.single_label_data = np.loadtxt(os.path.join(data_dir, "pca_multi_object_data.csv"), delimiter=',')
+        self.single_label_sensor_data = self.single_label_data[:, :7]
+        self.single_label_max_value = np.max(self.single_label_sensor_data)
         
         
     # Finds indices of the two highest peaks that are at least min_separation apart
@@ -48,17 +57,28 @@ class overallModel:
         return masked
     
     def predict(self,ir_data):
+        # --- sanitise raw sensor input ------------------------------------
+        ir_data = np.asarray(ir_data, dtype=np.float32)
+        if ir_data.ndim == 1:
+            ir_data = ir_data[np.newaxis, :]
+
         copied_input = ir_data.copy()
-        predicted_probabilities = self.single_label_model.predict(ir_data,verbose=0)[0]
+        raw_in = ir_data.copy()
+        pca_in  = self.single_label_pca.transform(raw_in)
+        norm_pca = pca_in / self.single_label_max_value
+        predicted_probabilities = self.single_label_model.predict(norm_pca,verbose=0)[0]
         predicted_class = np.argmax(predicted_probabilities)
         # print(f"Predicted Number of Objects: {predicted_class}")
         # print(f"Predicted Probabilites: {predicted_probabilities}")
         ret = []
 
+
         if predicted_class != 0:
             if predicted_class == 1:
-
-                predicted_output = self.regression_model.predict(ir_data,verbose=0)
+                raw_in = ir_data.copy()
+                pca_in  = self.rnn_pca.transform(raw_in)
+                norm_pca = pca_in / self.rnn_max_value
+                predicted_output = self.regression_model.predict(norm_pca,verbose=0)
                 predicted_distance, predicted_start_angle, predicted_end_angle = predicted_output[0]
                 predicted_start_angle_deg = np.degrees(predicted_start_angle)
                 predicted_end_angle_deg = np.degrees(predicted_end_angle)
@@ -80,8 +100,9 @@ class overallModel:
                 # first peak
                 input1 = self.create_masked_input(copied_input[0], peak1)
                 # print(f"[Object 1] Masked IR values before normalization: {input1}")
-                input1_normalized = input1 / self.max_value
-                predicted_output = self.regression_model.predict(input1_normalized[np.newaxis, :],verbose=0)
+                pca_in = self.rnn_pca.transform(input1[np.newaxis, :])
+                norm_pca_1 = pca_in / self.rnn_max_value
+                predicted_output = self.regression_model.predict(norm_pca_1,verbose=0)
 
                 predicted_distance, predicted_start_angle, predicted_end_angle = predicted_output[0]
                 predicted_start_angle_deg = np.degrees(predicted_start_angle)
@@ -99,8 +120,9 @@ class overallModel:
                 # second peak
                 input2 = self.create_masked_input(copied_input[0], peak2)
                 # print(f"[Object 1] Masked IR values before normalization: {input2}")
-                input2_normalized = input2 / self.max_value
-                predicted_output = self.regression_model.predict(input2_normalized[np.newaxis, :],verbose=0)
+                pca_in = self.rnn_pca.transform(input2[np.newaxis, :])
+                norm_pca_2 = pca_in / self.rnn_max_value
+                predicted_output = self.regression_model.predict(norm_pca_2,verbose=0)
 
                 predicted_distance, predicted_start_angle, predicted_end_angle = predicted_output[0]
                 predicted_start_angle_deg = np.degrees(predicted_start_angle)

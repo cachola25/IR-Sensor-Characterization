@@ -24,13 +24,7 @@ script_dir = os.path.dirname(os.path.realpath(__file__))
 project_root = os.path.abspath(os.path.join(script_dir, "../.."))
 data_dir = os.path.join(project_root, "data")
 models_dir = os.path.join(project_root, "models")
-pca = joblib.load(os.path.join(models_dir, "rnn_pca_model.joblib"))
-raw = pd.read_csv(os.path.join(data_dir, "pca_combinationOfAllData.csv"), header=None).to_numpy()
-raw_matrix = pd.read_csv(os.path.join(data_dir, "pca_combinationOfAllData.csv"), header=None).to_numpy()
-pca_space = raw_matrix[:, :7]
 sys.path.append(project_root)
-PCA_MAX = float(np.max(pca_space))
-MAX_SENSOR_VALUE = float(raw[:, :7].max())
 MAX_DISTANCE_IN = 10.0
 ZONE = "Zone 1"  # Example zone
 NUM_ROWS = 100  # Example limit
@@ -87,10 +81,8 @@ async def play(robot):
             # print(f"IR sensors: {ir_values}")
             
             # Make prediction
-            raw_in  = np.array(ir_values).reshape(1, -1)
-            pca_in  = pca.transform(raw_in)
-            norm_pca = pca_in / PCA_MAX
-            current_predictions = model.predict(norm_pca)
+            raw_in  = np.array(ir_values)
+            current_predictions = model.predict(raw_in)
             for i, pred in enumerate(current_predictions):
                 predicted_distance, predicted_start_angle_deg, predicted_end_angle_deg = pred
                 print(f"[Object {i+1}] Predicted Distance: {predicted_distance:.2f} inches; Start Angle: {predicted_start_angle_deg:.2f} degrees; End Angle: {predicted_end_angle_deg:.2f} degrees")
@@ -108,20 +100,20 @@ async def play(robot):
             await asyncio.sleep(1)
 
 # --- Fake Event Loop for Test Mode ---
-async def fake_prediction_loop():
-    global rows, printed, predicted_distance, predicted_start_deg, predicted_end_deg
-    print("🧪 Fake prediction loop started...")
-    while True:
-        ir_values = np.random.randint(200, 3000, size=7).tolist()
-        input_data = np.array(ir_values).reshape(1, -1) / MAX_SENSOR_VALUE
-        prediction = model.predict(input_data, verbose=0)[0]
-        predicted_distance, start_rad, end_rad = prediction
-        predicted_distance *= PIXEL_SCALE  # Scale to match grid radius
-        predicted_start_deg = np.degrees(start_rad) % 180
-        predicted_end_deg = np.degrees(end_rad) % 180
+# async def fake_prediction_loop():
+#     global rows, printed, predicted_distance, predicted_start_deg, predicted_end_deg
+#     print("🧪 Fake prediction loop started...")
+#     while True:
+#         ir_values = np.random.randint(200, 3000, size=7).tolist()
+#         input_data = np.array(ir_values).reshape(1, -1) / MAX_SENSOR_VALUE
+#         prediction = model.predict(input_data, verbose=0)[0]
+#         predicted_distance, start_rad, end_rad = prediction
+#         predicted_distance *= PIXEL_SCALE  # Scale to match grid radius
+#         predicted_start_deg = np.degrees(start_rad) % 180
+#         predicted_end_deg = np.degrees(end_rad) % 180
 
-        print(f"🧪 [TEST] dist={predicted_distance:.2f}, angle={predicted_start_deg:.2f}-{predicted_end_deg:.2f}")
-        await asyncio.sleep(0.5)
+#         print(f"🧪 [TEST] dist={predicted_distance:.2f}, angle={predicted_start_deg:.2f}-{predicted_end_deg:.2f}")
+#         await asyncio.sleep(0.5)
 
 # --- Pygame Loop ---
 async def run_game():
@@ -225,7 +217,7 @@ def main():
             robot.play()
         else:
             print("🧪 TEST MODE: Running with fake sensor data!")
-            tasks = [run_game(), fake_prediction_loop()]
+            # tasks = [run_game(), fake_prediction_loop()]
 
     except Exception as e:
         print(f"🔥 Could not connect to Roomba: {e}")
