@@ -39,7 +39,8 @@ file_path_original = os.path.join(data_dir,"multi_object_data.csv")
 data_original = pd.read_csv(file_path_original, header=None)
 
 # Shuffle the rows and convert directly to NumPy
-data = data_original.sample(frac=1, random_state=42).reset_index(drop=True).to_numpy()
+# data = data_original.sample(frac=1, random_state=42).reset_index(drop=True).to_numpy()
+data = data_original.to_numpy()
 
 # Step 2: Separate the Data
 sensor_data = data[:, :7]

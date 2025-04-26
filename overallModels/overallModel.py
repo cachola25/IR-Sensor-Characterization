@@ -58,7 +58,7 @@ class overallModel:
         if predicted_class != 0:
             if predicted_class == 1:
 
-                predicted_output = self.regression_model.predict(ir_data[0],verbose=0)
+                predicted_output = self.regression_model.predict(ir_data,verbose=0)
                 predicted_distance, predicted_start_angle, predicted_end_angle = predicted_output[0]
                 predicted_start_angle_deg = np.degrees(predicted_start_angle)
                 predicted_end_angle_deg = np.degrees(predicted_end_angle)

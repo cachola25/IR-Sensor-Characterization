@@ -17,16 +17,18 @@ WIDTH, HEIGHT = 1200, 700
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 RED_TRANSPARENT = (255, 0, 0, 80)
+BLUE = (0, 0, 255)
+BLUE_TRANSPARENT = (0, 0, 255, 80)
 BLACK = (0, 0, 0)
 script_dir = os.path.dirname(os.path.realpath(__file__))
 project_root = os.path.abspath(os.path.join(script_dir, "../.."))
 data_dir = os.path.join(project_root, "data")
 models_dir = os.path.join(project_root, "models")
-MODEL_PATH = os.path.join(models_dir, "rnn.keras")
 pca = joblib.load(os.path.join(models_dir, "rnn_pca_model.joblib"))
 raw = pd.read_csv(os.path.join(data_dir, "pca_combinationOfAllData.csv"), header=None).to_numpy()
 raw_matrix = pd.read_csv(os.path.join(data_dir, "pca_combinationOfAllData.csv"), header=None).to_numpy()
 pca_space = raw_matrix[:, :7]
+sys.path.append(project_root)
 PCA_MAX = float(np.max(pca_space))
 MAX_SENSOR_VALUE = float(raw[:, :7].max())
 MAX_DISTANCE_IN = 10.0
@@ -43,6 +45,7 @@ predicted_distance = 55  # Start with a visible non-zero value
 rows = 0
 printed = False
 selected_zones = ZONE
+current_predictions = []
 
 # --- Pygame Setup ---
 pygame.init()
@@ -54,8 +57,9 @@ roomba_image = pygame.image.load(os.path.join(script_dir, "iRobot.png"))
 roomba_image = pygame.transform.scale(roomba_image, (350, 200))
 
 # --- Load Model ---
-model = load_model(MODEL_PATH,compile=False)
-
+# model = load_model(MODEL_PATH,compile=False)
+from overallModels.overallModel import overallModel
+model = overallModel()
 # --- Roomba Setup ---
 try:
     # robot = Create3(Bluetooth("Roomba"))
@@ -68,7 +72,7 @@ except Exception as e:
 # --- Roomba Event Handler ---
 @event(robot.when_play)
 async def play(robot):
-    global rows, printed, predicted_distance, predicted_start_deg, predicted_end_deg
+    global current_predictions, rows, printed, predicted_distance, predicted_start_deg, predicted_end_deg
     print("Roomba play event triggered — starting sensor + prediction loop...")
     task = asyncio.create_task(run_game())
     while True:
@@ -80,19 +84,17 @@ async def play(robot):
                 continue
             ir_values = sensors.sensors
 
-            print(f"IR sensors: {ir_values}")
+            # print(f"IR sensors: {ir_values}")
             
             # Make prediction
             raw_in  = np.array(ir_values).reshape(1, -1)
             pca_in  = pca.transform(raw_in)
             norm_pca = pca_in / PCA_MAX
-            dist_in, start_rad, end_rad = model.predict(norm_pca, verbose=0)[0]
-            predicted_start_deg = (np.degrees(start_rad)) % 180
-            predicted_end_deg   = (np.degrees(end_rad)) % 180
-            # predicted_distance = dist_in * PIXEL_SCALE
-            predicted_distance = dist_in * PIXEL_SCALE
-            # print(f"🔮 Prediction → dist(in)= {dist_in:.2f}, angles= {predicted_start_deg:.1f}-{predicted_end_deg:.1f}")
-
+            current_predictions = model.predict(norm_pca)
+            for i, pred in enumerate(current_predictions):
+                predicted_distance, predicted_start_angle_deg, predicted_end_angle_deg = pred
+                print(f"[Object {i+1}] Predicted Distance: {predicted_distance:.2f} inches; Start Angle: {predicted_start_angle_deg:.2f} degrees; End Angle: {predicted_end_angle_deg:.2f} degrees")
+            print("\n\n")
 
             if rows >= NUM_ROWS and not printed:
                 await robot.play_note(440, 0.25)
@@ -132,13 +134,13 @@ async def run_game():
         screen.fill(WHITE)
         screen.blit(roomba_image, (roomba_pos[0] - roomba_image.get_width() // 2, roomba_pos[1] - roomba_image.get_height() // 2))
         draw_arc_with_grid(screen, roomba_pos, RADIUS, 0, 180, 20)
-        draw_prediction_cone(screen, roomba_pos, RADIUS, predicted_start_deg, predicted_end_deg, predicted_distance)
-
+        render_predictions(screen, roomba_pos, RADIUS)
+        
         # print(f"[DRAW] dist={predicted_distance:.2f}, start={predicted_start_deg:.2f}, end={predicted_end_deg:.2f}")
 
         pygame.display.flip()
         clock.tick(30)
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(0)
 
     pygame.quit()
     sys.exit()
@@ -177,7 +179,7 @@ def draw_arc_with_grid(surface, center, radius, start_angle, end_angle, sector_a
     surface.blit(arc_surface, (center[0] - radius, center[1] - radius))
 
 # --- Draw Prediction Cone ---
-def draw_prediction_cone(surface, center, radius, start_angle, end_angle, distance):
+def draw_prediction_cone(surface, center, radius, start_angle, end_angle, distance, color, t_color):
     arc_surface = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
     arc_surface.fill((0, 0, 0, 0))
     distance = max(5, min(distance, radius))  # Prevent drawing a dot only
@@ -189,15 +191,31 @@ def draw_prediction_cone(surface, center, radius, start_angle, end_angle, distan
     start_y = int(start_y)
     end_x = int(end_x)
     end_y = int(end_y)
-    pygame.draw.polygon(arc_surface, RED_TRANSPARENT, [(radius, radius), (start_x, start_y), (end_x, end_y)])
-    pygame.draw.line(arc_surface, RED, (radius, radius), (start_x, start_y), 3)
-    pygame.draw.line(arc_surface, RED, (radius, radius), (end_x, end_y), 3)
+    pygame.draw.polygon(arc_surface, t_color, [(radius, radius), (start_x, start_y), (end_x, end_y)])
+    pygame.draw.line(arc_surface, color, (radius, radius), (start_x, start_y), 3)
+    pygame.draw.line(arc_surface, color, (radius, radius), (end_x, end_y), 3)
     mask = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
     mask.fill((0, 0, 0, 0))
     pygame.draw.rect(mask, (255, 255, 255, 255), (0, 0, radius * 2, radius + 5))
     arc_surface.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
     surface.blit(arc_surface, (center[0] - radius, center[1] - radius))
 
+def render_predictions(surface, center, radius):
+    if len(current_predictions) == 0:
+        return
+    if len(current_predictions) == 1:
+        dist_in, start_deg, end_deg = current_predictions[0]
+        dist_in *= PIXEL_SCALE
+        draw_prediction_cone(surface, center, radius, start_deg, end_deg, dist_in, RED, RED_TRANSPARENT)
+    elif len(current_predictions) == 2:
+        dist_in, start_deg, end_deg = current_predictions[0]
+        dist_in *= PIXEL_SCALE
+        draw_prediction_cone(surface, center, radius, start_deg, end_deg, dist_in, RED, RED_TRANSPARENT)
+        
+        dist_in, start_deg, end_deg = current_predictions[1]
+        dist_in *= PIXEL_SCALE
+        draw_prediction_cone(surface, center, radius, start_deg, end_deg, dist_in, BLUE, BLUE_TRANSPARENT)
+        
 # --- Main Runner ---
 def main():
     try:
