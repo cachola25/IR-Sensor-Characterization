@@ -12,7 +12,6 @@ from irobot_edu_sdk.robots import Create3
 from irobot_edu_sdk.event import event
 from tensorflow.keras.models import load_model
 
-nest_asyncio.apply()
 # --- Constants ---
 WIDTH, HEIGHT = 1200, 700
 WHITE = (255, 255, 255)
@@ -38,9 +37,9 @@ RADIUS = 550
 PIXEL_SCALE = 55 # pixels per inch
 
 # --- State ---
-predicted_start_deg = 90
+predicted_start_deg = 0
 predicted_end_deg = 90
-predicted_distance = 1  # Start with a visible non-zero value
+predicted_distance = 55  # Start with a visible non-zero value
 rows = 0
 printed = False
 selected_zones = ZONE
@@ -69,7 +68,7 @@ except Exception as e:
 # --- Roomba Event Handler ---
 @event(robot.when_play)
 async def play(robot):
-    global rows, printed, out_file, predicted_distance, predicted_start_deg, predicted_end_deg
+    global rows, printed, predicted_distance, predicted_start_deg, predicted_end_deg
     print("Roomba play event triggered — starting sensor + prediction loop...")
     task = asyncio.create_task(run_game())
     while True:
@@ -91,9 +90,9 @@ async def play(robot):
             predicted_start_deg = (np.degrees(start_rad)) % 180
             predicted_end_deg   = (np.degrees(end_rad)) % 180
             # predicted_distance = dist_in * PIXEL_SCALE
-            predicted_distance = dist_in * 550
+            predicted_distance = dist_in * PIXEL_SCALE
+            # print(f"🔮 Prediction → dist(in)= {dist_in:.2f}, angles= {predicted_start_deg:.1f}-{predicted_end_deg:.1f}")
 
-            print(f"🔮 Prediction → dist(in)= {dist_in:.2f}, angles= {predicted_start_deg:.1f}-{predicted_end_deg:.1f}")
 
             if rows >= NUM_ROWS and not printed:
                 await robot.play_note(440, 0.25)
@@ -115,7 +114,7 @@ async def fake_prediction_loop():
         input_data = np.array(ir_values).reshape(1, -1) / MAX_SENSOR_VALUE
         prediction = model.predict(input_data, verbose=0)[0]
         predicted_distance, start_rad, end_rad = prediction
-        predicted_distance *= RADIUS  # Scale to match grid radius
+        predicted_distance *= PIXEL_SCALE  # Scale to match grid radius
         predicted_start_deg = np.degrees(start_rad) % 180
         predicted_end_deg = np.degrees(end_rad) % 180
 
@@ -135,17 +134,19 @@ async def run_game():
         draw_arc_with_grid(screen, roomba_pos, RADIUS, 0, 180, 20)
         draw_prediction_cone(screen, roomba_pos, RADIUS, predicted_start_deg, predicted_end_deg, predicted_distance)
 
-        print(f"[DRAW] dist={predicted_distance:.2f}, start={predicted_start_deg:.2f}, end={predicted_end_deg:.2f}")
+        # print(f"[DRAW] dist={predicted_distance:.2f}, start={predicted_start_deg:.2f}, end={predicted_end_deg:.2f}")
 
         pygame.display.flip()
         clock.tick(30)
-        await asyncio.sleep(0)
+        await asyncio.sleep(0.5)
 
     pygame.quit()
     sys.exit()
 
 # --- Draw Arc Grid ---
 def draw_arc_with_grid(surface, center, radius, start_angle, end_angle, sector_angle):
+    start_angle = int(start_angle)
+    end_angle = int(end_angle)
     arc_surface = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
     arc_surface.fill((0, 0, 0, 0))
     rect = pygame.Rect(0, 0, radius * 2, radius * 2)
@@ -184,6 +185,10 @@ def draw_prediction_cone(surface, center, radius, start_angle, end_angle, distan
     start_y = radius - distance * math.sin(math.radians(start_angle))
     end_x = radius + distance * math.cos(math.radians(end_angle))
     end_y = radius - distance * math.sin(math.radians(end_angle))
+    start_x = int(start_x)
+    start_y = int(start_y)
+    end_x = int(end_x)
+    end_y = int(end_y)
     pygame.draw.polygon(arc_surface, RED_TRANSPARENT, [(radius, radius), (start_x, start_y), (end_x, end_y)])
     pygame.draw.line(arc_surface, RED, (radius, radius), (start_x, start_y), 3)
     pygame.draw.line(arc_surface, RED, (radius, radius), (end_x, end_y), 3)
