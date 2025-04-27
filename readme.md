@@ -12,7 +12,94 @@
 
 ## Installation
 
-*(Instructions for installation go here)*
+Follow these steps to set up the project environment:
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/your-username/IR-Sensor-Characterization.git
+cd IR-Sensor-Characterization
+```
+
+### 2. Install Python 3.12
+
+Ensure you have **Python 3.12.x** installed.
+
+Check your Python version:
+
+```bash
+python3 --version
+```
+
+If needed, download Python 3.12 from [python.org](https://www.python.org/downloads/).
+
+### 3. Ensure `venv` is Installed
+
+Most systems already have the `venv` module. 
+Check `python3 -m venv --help` to see if the `venv` module is found
+
+If not:
+
+- **Ubuntu/Debian**:
+
+  ```bash
+  sudo apt install python3-venv
+  ```
+
+- **macOS/Windows**: `venv` is usually included automatically.
+
+### 4. Set Up the Virtual Environment and Install Dependencies
+
+Use the provided `Makefile` to automate setup:
+
+```bash
+make setup
+```
+
+This will:
+- Create a new virtual environment named `venv/`
+- Activate the environment temporarily
+- Install all project dependencies listed in `requirements.txt`
+
+### 5. Activate the Virtual Environment (for new terminal sessions)
+
+Every time you open a new terminal, activate the environment:
+
+- **macOS/Linux**:
+
+  ```bash
+  source venv/bin/activate
+  ```
+
+- **Windows (PowerShell)**:
+
+  ```bash
+  .\venv\Scripts\activate
+  ```
+
+You should see `(venv)` appear at the start of your terminal prompt.
+
+### 6. Run the Project
+
+With the virtual environment activated, you can now run any project scripts:
+
+```bash
+python3 path/to/your_script.py
+```
+
+Example:
+
+```bash
+python3 overallModels/testModel.py
+```
+
+### 7. (Optional) Clean Up the Environment
+
+To delete the virtual environment and start fresh:
+
+```bash
+make clean
+```
 
 ## Directory Structure
 <sub>Additional files in tuning_dir directories are omitted for clarity</sub>
