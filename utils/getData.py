@@ -1,6 +1,4 @@
 import os
-import sys
-import signal
 from irobot_edu_sdk.backend.bluetooth import Bluetooth
 from irobot_edu_sdk.robots import event, Create3
 

@@ -4,8 +4,7 @@ import pandas as pd
 import tensorflow as tf
 import keras_tuner as kt
 from tensorflow import keras
-import matplotlib.pyplot as plt
-from tensorflow.keras import layers, models
+from tensorflow.keras import layers
 from tensorflow.keras.callbacks import EarlyStopping
 
 # Define a model-building function for Keras Tuner
