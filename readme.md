@@ -17,7 +17,7 @@ Follow these steps to set up the project environment:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/IR-Sensor-Characterization.git
+git clone https://github.com/cachola25/IR-Sensor-Characterization.git
 cd IR-Sensor-Characterization
 ```
 
@@ -25,14 +25,27 @@ cd IR-Sensor-Characterization
 
 Ensure you have **Python 3.12.x** installed.
 
-Check your Python version:
+You can check your installed Python version with:
 
 ```bash
 python3 --version
 ```
 
-If needed, download Python 3.12 from [python.org](https://www.python.org/downloads/).
+If Python 3.12 is not installed, download it from [python.org](https://www.python.org/downloads/).
 
+> **Important:**  
+> This project was developed and tested on Python 3.12.  
+> Python 3.13+ is newer and **may not be fully supported** by all dependencies yet.
+> 
+> - If `python3 --version` shows Python 3.13 or higher, try checking if Python 3.12 is also installed by running:
+> 
+>   ```bash
+>   python3.12 --version
+>   ```
+> 
+> - If Python 3.12 is available, **edit the `Makefile`** and replace all instances of `python3` with `python3.12` **before** running any setup commands.
+> 
+> - If Python 3.12 is not installed, and your system supports it, please install Python 3.12 to proceed.
 ### 3. Ensure `venv` is Installed
 
 Most systems already have the `venv` module. 
