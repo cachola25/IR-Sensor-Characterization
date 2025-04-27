@@ -17,7 +17,7 @@ Follow these steps to set up the project environment:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/IR-Sensor-Characterization.git
+git clone https://github.com/cachola25/IR-Sensor-Characterization.git
 cd IR-Sensor-Characterization
 ```
 
