@@ -1,5 +1,20 @@
 # IR Sensor Characterization Capstone Project
-## Directory Structure 
+
+## Table of Contents
+- [Installation](#installation)
+- [Directory Structure](#directory-structure)
+- [Directories Explained](#directories-explained)
+  - [data](#data)
+  - [models](#models)
+  - [overallModels](#overallmodels)
+  - [Regression and Single Label Models](#regression-and-single-label-models)
+  - [utils](#utils)
+
+## Installation
+
+*(Instructions for installation go here)*
+
+## Directory Structure
 <sub>Additional files in tuning_dir directories are omitted for clarity</sub>
 ```
 IR-Sensor-Characterization
@@ -53,3 +68,54 @@ IR-Sensor-Characterization
 ├── LICENSE
 └── readme.md
 ```
+## Directories Explained
+
+### data
+- Contains `differentSizesData` and `newData`.
+- `newData` holds the primary datasets used for model training, separated by object type.
+- `combinationOfAllData.csv` combines all individual datasets.
+- `pca_combinationOfAllData.csv` is the PCA-transformed version used for training the Regression NN.
+- `multi_object_data.csv` and its PCA variant serve the Single Label NN.
+- More details about PCA can be found in the [utils](#utils) section.
+
+### models
+- Stores the final, trained models: the Regression NN, Single Label NN, and the PCA transformers.
+- Ensures consistent data transformations during real-world predictions.
+
+### overallModels
+- Contains:
+  - **overallModel.py**: Defines the `overallModel` class which automatically loads the Regression NN and Single Label NN.
+    - Contains a single `predict()` method that accepts raw IR values.
+  - **testModel.py**: A testing script for experimenting with the `overallModel` class.
+
+### Regression and Single Label Models
+- Combines `regressionneuralnetwork` and `singleLabelObjectDetection` directories.
+- Each contains:
+
+  - **createModel.py**
+    - Builds and trains either the Regression or Single Label NN.
+    - Saves the trained model (`rnn.keras` for regression, `single_label.keras` for single label) to the `models/` directory.
+
+  - **tuning_dir**
+    - Stores hyperparameter tuning results using [Keras Tuner](https://keras.io/keras_tuner/).
+    - Contains the best model architectures.
+    - To retune, delete `tuning_dir` or set `overwrite=True` in the tuning script.
+
+- The training pipeline is identical for both model types.
+
+### utils
+- Contains utility scripts for data processing and visualization:
+  - **create_heatmap.py**: Creates a heatmap of the RNN's prediction errors across the polar grid.
+  - **getData.py**:
+    - Prompts to collect data for either the Regression NN (0) or Single Label NN (1).
+    - Saves output CSVs to the `data/` directory.
+    - You must manually set the output file name inside the script.
+  - **pca.py**:
+    - Applies PCA to either the Regression NN or Single Label NN datasets.
+    - You must manually set the input file in the script.
+  - **finalVisualization/visualizationFinal.py**:
+    - Visualizes predictions:
+      - No cone = 0 objects.
+      - Red cone = 1 object.
+      - Red + Blue cones = 2 objects.
+    - WARNING: May not be fully compatible with Windows systems.
