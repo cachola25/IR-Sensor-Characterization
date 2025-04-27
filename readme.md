@@ -1,4 +1,14 @@
 # IR Sensor Characterization Capstone Project
+
+## Table of Contents
+- [Directory Structure](#directory-structure)
+- [Directories Explained](#directories-explained)
+  - [data](#data)
+  - [models](#models)
+  - [overallModels](#overallmodels)
+  - [singleLabelObjectDetection](#singlelabelobjectdetection)
+  - [utils](#utils)
+
 ## Directory Structure 
 <sub>Additional files in tuning_dir directories are omitted for clarity</sub>
 ```
@@ -53,3 +63,20 @@ IR-Sensor-Characterization
 ├── LICENSE
 └── readme.md
 ```
+
+## Directories Explained
+
+### data
+- Description of what data folder contains...
+
+### models
+- Description of the models folder...
+
+### overallModels
+- Description of the overallModels folder...
+
+### singleLabelObjectDetection
+- Description of the singleLabelObjectDetection folder...
+
+### utils
+- Description of the utils folder...
