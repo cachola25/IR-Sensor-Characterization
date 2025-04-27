@@ -5,4 +5,3 @@ adaboost-main/
 __pycache__/
 output.txt
 *.pkl
-*.txt
