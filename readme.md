@@ -115,34 +115,21 @@ make clean
 ```
 
 ## Directory Structure
-<sub>Additional files in tuning_dir directories are omitted for clarity</sub>
+<sub>Additional files in tuning_dir and data directories are omitted for clarity</sub>
 ```
 IR-Sensor-Characterization
 ├── data
 │   ├── differentSizesData
-│   │   ├── differentSizesData.csv
-│   │   ├── differentSizesData2.csv
-│   │   ├── testDifferentSizesData.csv
-│   │   └── testDifferentSizesDataShuffle.csv
 │   ├── newData
-│   │   ├── blackCube.csv
-│   │   ├── blackShoe.csv
-│   │   ├── blackWaterBottle.csv
-│   │   ├── combinationOfAllData.csv
-│   │   ├── paperTowelRoll.csv
-│   │   ├── starCup.csv
-│   │   ├── whiteCube.csv
-│   │   ├── whiteCubeEdge.csv
-│   │   ├── whiteShoe.csv
-│   │   ├── woodenCube.csv
-│   │   └── woodenCubeEdge.csv
 │   ├── multi_object_data.csv
-│   └── pca_combinationOfAllData.csv
+│   ├── pca_combinationOfAllData.csv
+│   └── pca_multi_object_data.csv
 │
 ├── models
 │   ├── rnn.keras
 │   ├── rnn_pca_model.joblib
-│   └── single_label.keras
+│   ├── single_label.keras
+│   └── single_label_pca_model.joblib
 │
 ├── overallModels
 │   ├── overallModel.py
@@ -150,8 +137,7 @@ IR-Sensor-Characterization
 │
 ├── regressionneuralnetwork
 │   ├── tuning_dir
-│   ├── createModel.py
-│   └── validateModel.py
+│   └── createModel.py
 │
 ├── singleLabelObjectDetection
 │   ├── tuning_dir
@@ -159,14 +145,14 @@ IR-Sensor-Characterization
 │
 ├── utils
 │   ├── finalVisualization
-│   │   ├── iRobot.png
-│   │   └── visualizationFinal.py
 │   ├── create_heatmap.py
 │   ├── getData.py
 │   └── pca.py
 │
 ├── LICENSE
-└── readme.md
+├── makefile
+├── readme.md
+└── requirements.txt
 ```
 ## Directories Explained
 
